@@ -1,0 +1,1093 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Base Ten Blocks</title>
+<style>
+  :root {
+    --ink: #2b2632;
+    --muted: #7a7182;
+    --glass: rgba(255, 255, 255, .76);
+    --glass-strong: rgba(255, 255, 255, .92);
+    --shadow: 0 18px 44px rgba(69, 55, 84, .13);
+    --soft-shadow: 0 10px 28px rgba(69, 55, 84, .12);
+    --pink-bg: #ffd8e6;
+    --pink-line: #ff7ca4;
+    --blue-bg: #b5f2ff;
+    --blue-line: #40b9cf;
+    --mint-bg: #d5ffd8;
+    --mint-line: #60c879;
+    --purple: #8c6cff;
+    --yellow: #fff17a;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    color: var(--ink);
+    font-family: ui-rounded, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    background:
+      radial-gradient(circle at 8% 10%, rgba(181, 242, 255, .52), transparent 30%),
+      radial-gradient(circle at 90% 12%, rgba(255, 216, 230, .60), transparent 31%),
+      radial-gradient(circle at 22% 90%, rgba(213, 255, 216, .60), transparent 32%),
+      radial-gradient(circle at 86% 82%, rgba(255, 241, 122, .40), transparent 30%),
+      linear-gradient(135deg, #fffdf7 0%, #f7fcff 45%, #fff8fb 100%);
+  }
+
+  button {
+    border: 0;
+    padding: 0;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+    user-select: none;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #app, #stage, #drawCanvas, #blockLayer, #selectionBox, #sparkleLayer {
+    position: fixed;
+    inset: 0;
+  }
+
+  #app { overflow: hidden; }
+
+  #stage {
+    z-index: 1;
+    touch-action: none;
+  }
+
+  #stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 50% 46%, rgba(255, 255, 255, .55), transparent 36%),
+      linear-gradient(rgba(255, 255, 255, .20), rgba(255, 255, 255, .20));
+  }
+
+  #blockLayer { z-index: 10; }
+  #drawCanvas { z-index: 20; pointer-events: none; cursor: crosshair; }
+  #selectionBox {
+    z-index: 30;
+    display: none;
+    border: 2px dashed rgba(140, 108, 255, .54);
+    border-radius: 22px;
+    background: rgba(140, 108, 255, .08);
+    pointer-events: none;
+  }
+  #sparkleLayer { z-index: 80; pointer-events: none; overflow: hidden; }
+
+  .toolbar {
+    position: fixed;
+    z-index: 110;
+    top: max(14px, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 28px;
+    background: var(--glass);
+    box-shadow: var(--shadow), inset 0 0 0 1px rgba(255, 255, 255, .72);
+    backdrop-filter: blur(18px) saturate(1.35);
+  }
+
+  .tool-btn {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    color: var(--ink);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.74));
+    box-shadow:
+      inset 0 0 0 1px rgba(103, 88, 124, .12),
+      0 8px 18px rgba(55, 42, 70, .10);
+    transition: transform .18s cubic-bezier(.2,1.2,.3,1), box-shadow .18s ease, filter .18s ease, background .18s ease;
+  }
+
+  .tool-btn:hover { transform: translateY(-2px) rotate(-1deg); }
+  .tool-btn:active { transform: translateY(1px) scale(.94); }
+
+  .tool-btn .icon {
+    font-size: 25px;
+    line-height: 1;
+    filter: drop-shadow(0 1px 0 rgba(255,255,255,.85));
+  }
+
+  .tool-btn.active {
+    background:
+      radial-gradient(circle at 30% 18%, #ffffff 0 26%, transparent 27%),
+      linear-gradient(180deg, #fffaff, #efeaff);
+    box-shadow:
+      inset 0 0 0 2px rgba(140, 108, 255, .40),
+      0 10px 22px rgba(140, 108, 255, .22);
+  }
+
+  .tool-btn.drop-hot {
+    transform: translateY(-4px) scale(1.08);
+    box-shadow:
+      inset 0 0 0 2px rgba(140, 108, 255, .40),
+      0 0 0 8px rgba(140, 108, 255, .12),
+      0 16px 28px rgba(140, 108, 255, .22);
+  }
+
+  .tool-btn.disabled {
+    opacity: .36;
+    pointer-events: none;
+    filter: grayscale(.18);
+  }
+
+  .tool-btn.pulse .icon { animation: buttonPop .36s cubic-bezier(.2,1.5,.4,1); }
+
+  @keyframes buttonPop {
+    0% { transform: scale(1) rotate(0); }
+    45% { transform: scale(1.26) rotate(-8deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+
+  .palette {
+    position: fixed;
+    z-index: 105;
+    left: 50%;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, .70);
+    box-shadow: var(--shadow), inset 0 0 0 1px rgba(255, 255, 255, .72);
+    backdrop-filter: blur(18px) saturate(1.36);
+  }
+
+  .palette-block {
+    position: relative;
+    display: grid;
+    place-items: center;
+    border-radius: 19px;
+    color: var(--ink);
+    box-shadow:
+      inset 0 0 0 2.5px currentColor,
+      inset 0 8px 0 rgba(255,255,255,.23),
+      0 10px 22px rgba(55, 42, 70, .13);
+    transition: transform .18s cubic-bezier(.2,1.35,.35,1), box-shadow .18s ease, filter .18s ease;
+  }
+
+  .palette-block::after {
+    content: "";
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    right: 8px;
+    top: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.72);
+    box-shadow: -6px 7px 0 -4px rgba(255,255,255,.84);
+    pointer-events: none;
+  }
+
+  .palette-block:hover { transform: translateY(-5px) scale(1.03) rotate(-1deg); }
+  .palette-block:active { transform: translateY(1px) scale(.95); }
+
+  .palette-block.unit {
+    width: 58px;
+    height: 58px;
+    background: var(--pink-bg);
+    color: var(--pink-line);
+  }
+
+  .palette-block.ten {
+    width: 100px;
+    height: 58px;
+    background: var(--blue-bg);
+    color: var(--blue-line);
+  }
+
+  .palette-block.hundred {
+    width: 78px;
+    height: 78px;
+    background: var(--mint-bg);
+    color: var(--mint-line);
+  }
+
+  .palette-block span,
+  .block span {
+    position: relative;
+    z-index: 1;
+    color: #2c2632;
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .72);
+    pointer-events: none;
+  }
+
+  .palette-block.unit span { font-size: 30px; }
+  .palette-block.ten span { font-size: 30px; }
+  .palette-block.hundred span { font-size: 27px; }
+
+  .block {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    border-radius: 20px;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    will-change: transform;
+    transform-origin: center;
+    box-shadow:
+      inset 0 0 0 2.5px currentColor,
+      inset 0 10px 0 rgba(255, 255, 255, .22),
+      0 12px 24px rgba(55, 42, 70, .14);
+    transition: box-shadow .16s ease, filter .16s ease;
+    animation: popIn .28s cubic-bezier(.18,1.55,.36,1) both;
+  }
+
+  .block::after {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    right: 10px;
+    top: 9px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.70);
+    box-shadow: -7px 8px 0 -5px rgba(255,255,255,.80);
+    pointer-events: none;
+  }
+
+  .block.unit {
+    width: 60px;
+    height: 60px;
+    background: var(--pink-bg);
+    color: var(--pink-line);
+  }
+
+  .block.ten {
+    width: 106px;
+    height: 60px;
+    background: var(--blue-bg);
+    color: var(--blue-line);
+  }
+
+  .block.hundred {
+    width: 124px;
+    height: 124px;
+    background: var(--mint-bg);
+    color: var(--mint-line);
+  }
+
+  .block.unit span { font-size: 31px; }
+  .block.ten span { font-size: 31px; }
+  .block.hundred span { font-size: 33px; }
+
+  .block.selected {
+    filter: saturate(1.08) brightness(1.02);
+    box-shadow:
+      inset 0 0 0 2.5px currentColor,
+      inset 0 10px 0 rgba(255, 255, 255, .22),
+      0 0 0 5px rgba(140, 108, 255, .20),
+      0 16px 30px rgba(140, 108, 255, .18);
+  }
+
+  .block.dragging {
+    cursor: grabbing;
+    filter: saturate(1.10) brightness(1.03);
+    box-shadow:
+      inset 0 0 0 2.5px currentColor,
+      inset 0 10px 0 rgba(255, 255, 255, .22),
+      0 18px 36px rgba(55, 42, 70, .20);
+  }
+
+  .drag-ghost {
+    position: fixed;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: .78;
+    transform: translate(-50%, -50%) scale(1.04);
+    animation: none;
+  }
+
+  .sparkle {
+    position: fixed;
+    left: var(--sx);
+    top: var(--sy);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--sc, #fff17a);
+    box-shadow: 0 0 0 5px rgba(255,255,255,.42);
+    animation: sparkleFly .62s ease-out forwards;
+  }
+
+  @keyframes sparkleFly {
+    0% { transform: translate(-50%, -50%) scale(.65); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.08); opacity: 0; }
+  }
+
+  @keyframes popIn {
+    0% { opacity: 0; transform: translate(var(--x, 0), var(--y, 0)) scale(.60) rotate(-2deg); }
+    65% { opacity: 1; transform: translate(var(--x, 0), var(--y, 0)) scale(1.08) rotate(1deg); }
+    100% { opacity: 1; transform: translate(var(--x, 0), var(--y, 0)) scale(1) rotate(0); }
+  }
+
+  @media (max-width: 880px) {
+    .toolbar {
+      top: max(10px, env(safe-area-inset-top));
+      gap: 6px;
+      padding: 8px;
+      border-radius: 25px;
+      max-width: calc(100vw - 18px);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .toolbar::-webkit-scrollbar { display: none; }
+    .tool-btn { width: 43px; height: 43px; border-radius: 16px; flex: 0 0 auto; }
+    .tool-btn .icon { font-size: 23px; }
+    .palette { gap: 10px; padding: 10px 11px; border-radius: 26px; }
+    .palette-block.unit { width: 52px; height: 52px; }
+    .palette-block.ten { width: 88px; height: 52px; }
+    .palette-block.hundred { width: 64px; height: 64px; }
+    .palette-block.unit span, .palette-block.ten span { font-size: 27px; }
+    .palette-block.hundred span { font-size: 23px; }
+  }
+
+  @media (max-width: 520px) {
+    .toolbar { left: 9px; right: 9px; transform: none; justify-content: flex-start; }
+    .palette { left: 50%; max-width: calc(100vw - 18px); }
+    .block.unit { width: 54px; height: 54px; }
+    .block.ten { width: 94px; height: 54px; }
+    .block.hundred { width: 106px; height: 106px; }
+    .block.unit span, .block.ten span { font-size: 28px; }
+    .block.hundred span { font-size: 29px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <main id="stage" aria-label="작업 공간">
+    <div id="blockLayer"></div>
+    <canvas id="drawCanvas"></canvas>
+    <div id="selectionBox"></div>
+    <div id="sparkleLayer"></div>
+  </main>
+
+  <nav class="toolbar" aria-label="도구">
+    <button class="tool-btn" id="undoBtn" title="이전" aria-label="이전"><span class="icon">↩️</span></button>
+    <button class="tool-btn" id="mergeBtn" title="합치기" aria-label="합치기"><span class="icon">🧲</span></button>
+    <button class="tool-btn" id="splitBtn" title="분리하기" aria-label="분리하기"><span class="icon">✂️</span></button>
+    <button class="tool-btn" id="deleteBtn" title="삭제" aria-label="삭제"><span class="icon">🗑️</span></button>
+    <button class="tool-btn active" id="selectBtn" title="선택" aria-label="선택"><span class="icon">👆</span></button>
+    <button class="tool-btn" id="penBtn" title="펜" aria-label="펜"><span class="icon">✏️</span></button>
+    <button class="tool-btn" id="highBtn" title="형광펜" aria-label="형광펜"><span class="icon">🖍️</span></button>
+    <button class="tool-btn" id="fullscreenBtn" title="전체화면" aria-label="전체화면"><span class="icon">⛶</span></button>
+  </nav>
+
+  <section class="palette" aria-label="모형">
+    <button class="palette-block unit" data-type="unit" title="일모형" aria-label="일모형"><span>1</span></button>
+    <button class="palette-block ten" data-type="ten" title="십모형" aria-label="십모형"><span>10</span></button>
+    <button class="palette-block hundred" data-type="hundred" title="백모형" aria-label="백모형"><span>100</span></button>
+  </section>
+</div>
+
+<script>
+(() => {
+  const stage = document.getElementById('stage');
+  const blockLayer = document.getElementById('blockLayer');
+  const canvas = document.getElementById('drawCanvas');
+  const ctx = canvas.getContext('2d');
+  const selectionBox = document.getElementById('selectionBox');
+  const sparkleLayer = document.getElementById('sparkleLayer');
+
+  const buttons = {
+    undo: document.getElementById('undoBtn'),
+    merge: document.getElementById('mergeBtn'),
+    split: document.getElementById('splitBtn'),
+    delete: document.getElementById('deleteBtn'),
+    select: document.getElementById('selectBtn'),
+    pen: document.getElementById('penBtn'),
+    high: document.getElementById('highBtn'),
+    fullscreen: document.getElementById('fullscreenBtn')
+  };
+
+  const labels = { unit: '1', ten: '10', hundred: '100' };
+  const sizes = {
+    unit: { w: 60, h: 60 },
+    ten: { w: 106, h: 60 },
+    hundred: { w: 124, h: 124 }
+  };
+
+  const model = { blocks: [] };
+  let selected = new Set();
+  let history = [];
+  let uid = 1;
+  let mode = 'select';
+  let spawn = { x: 30, y: 104, rowH: 0 };
+
+  const clamp = (n, min, max) => Math.max(min, Math.min(n, max));
+  const stageRect = () => stage.getBoundingClientRect();
+  const makeId = () => 'b' + (uid++).toString(36) + '_' + Date.now().toString(36);
+
+  function currentSize(type) {
+    if (window.matchMedia('(max-width: 520px)').matches) {
+      if (type === 'unit') return { w: 54, h: 54 };
+      if (type === 'ten') return { w: 94, h: 54 };
+      return { w: 106, h: 106 };
+    }
+    return sizes[type];
+  }
+
+  function safeInsets() {
+    const narrow = window.matchMedia('(max-width: 880px)').matches;
+    return {
+      top: narrow ? 72 : 86,
+      left: 14,
+      right: 14,
+      bottom: narrow ? 98 : 112
+    };
+  }
+
+  function clampPos(type, x, y) {
+    const d = currentSize(type);
+    const inset = safeInsets();
+    return {
+      x: clamp(x, inset.left, Math.max(inset.left, stage.clientWidth - d.w - inset.right)),
+      y: clamp(y, inset.top, Math.max(inset.top, stage.clientHeight - d.h - inset.bottom))
+    };
+  }
+
+  function blockCenter(block) {
+    const d = currentSize(block.type);
+    return { x: block.x + d.w / 2, y: block.y + d.h / 2 };
+  }
+
+  function captureDrawing() {
+    if (!canvas.width || !canvas.height) return '';
+    return canvas.toDataURL('image/png');
+  }
+
+  function clearCanvas() {
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  }
+
+  function restoreDrawing(dataUrl) {
+    clearCanvas();
+    if (!dataUrl) return;
+    const img = new Image();
+    img.onload = () => {
+      clearCanvas();
+      ctx.drawImage(img, 0, 0, stage.clientWidth, stage.clientHeight);
+    };
+    img.src = dataUrl;
+  }
+
+  function snapshot() {
+    return {
+      blocks: model.blocks.map(b => ({ ...b })),
+      drawing: captureDrawing(),
+      spawn: { ...spawn }
+    };
+  }
+
+  function saveState() {
+    history.push(snapshot());
+    if (history.length > 90) history.shift();
+    updateUndo();
+  }
+
+  function restoreState(state) {
+    model.blocks = state.blocks.map(b => ({ ...b }));
+    spawn = { ...state.spawn };
+    selected.clear();
+    render();
+    restoreDrawing(state.drawing);
+    updateUndo();
+  }
+
+  function updateUndo() {
+    buttons.undo.classList.toggle('disabled', history.length === 0);
+  }
+
+  function nextPosition(type) {
+    const d = currentSize(type);
+    const gap = 14;
+    const inset = safeInsets();
+    if (spawn.x + d.w > stage.clientWidth - inset.right) {
+      spawn.x = inset.left + 16;
+      spawn.y += Math.max(74, spawn.rowH + gap);
+      spawn.rowH = 0;
+    }
+    if (spawn.y + d.h > stage.clientHeight - inset.bottom) {
+      spawn.x = inset.left + 16;
+      spawn.y = inset.top + 18;
+      spawn.rowH = 0;
+    }
+    const pos = clampPos(type, spawn.x, spawn.y);
+    spawn.x += d.w + gap;
+    spawn.rowH = Math.max(spawn.rowH, d.h);
+    return pos;
+  }
+
+  function addBlock(type, x, y, selectNew = true) {
+    const pos = clampPos(type, x, y);
+    const block = { id: makeId(), type, x: pos.x, y: pos.y };
+    model.blocks.push(block);
+    if (selectNew) selected.add(block.id);
+    render();
+    sparkleAt(pos.x + currentSize(type).w / 2, pos.y + currentSize(type).h / 2);
+    return block;
+  }
+
+  function getBlock(id) {
+    return model.blocks.find(b => b.id === id);
+  }
+
+  function blockElement(id) {
+    return blockLayer.querySelector(`[data-id="${CSS.escape(id)}"]`);
+  }
+
+  function updateSelectionClasses() {
+    blockLayer.querySelectorAll('.block').forEach(el => {
+      el.classList.toggle('selected', selected.has(el.dataset.id));
+    });
+  }
+
+  function render() {
+    blockLayer.innerHTML = '';
+    for (const block of model.blocks) {
+      const el = document.createElement('div');
+      el.className = `block ${block.type}`;
+      el.dataset.id = block.id;
+      el.style.setProperty('--x', `${block.x}px`);
+      el.style.setProperty('--y', `${block.y}px`);
+      el.style.transform = `translate(${block.x}px, ${block.y}px)`;
+      el.innerHTML = `<span>${labels[block.type]}</span>`;
+      if (selected.has(block.id)) el.classList.add('selected');
+      el.addEventListener('pointerdown', onBlockPointerDown);
+      blockLayer.appendChild(el);
+    }
+  }
+
+  function updateBlockPosition(id) {
+    const block = getBlock(id);
+    const el = blockElement(id);
+    if (block && el) {
+      el.style.setProperty('--x', `${block.x}px`);
+      el.style.setProperty('--y', `${block.y}px`);
+      el.style.transform = `translate(${block.x}px, ${block.y}px)`;
+    }
+  }
+
+  function pulse(button) {
+    button.classList.remove('pulse');
+    void button.offsetWidth;
+    button.classList.add('pulse');
+  }
+
+  function sparkleAt(x, y) {
+    const colors = ['#fff17a', '#ffb6d1', '#a9f7ff', '#baffc0', '#d8c7ff'];
+    for (let i = 0; i < 10; i++) {
+      const dot = document.createElement('span');
+      dot.className = 'sparkle';
+      const angle = (Math.PI * 2 * i) / 10 + Math.random() * .35;
+      const dist = 24 + Math.random() * 28;
+      dot.style.setProperty('--sx', `${x}px`);
+      dot.style.setProperty('--sy', `${y}px`);
+      dot.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+      dot.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+      dot.style.setProperty('--sc', colors[i % colors.length]);
+      sparkleLayer.appendChild(dot);
+      dot.addEventListener('animationend', () => dot.remove(), { once: true });
+    }
+  }
+
+  function averageCenter(items, typeForFallback) {
+    const fallback = currentSize(typeForFallback);
+    if (!items.length) return { x: 80 + fallback.w / 2, y: 120 + fallback.h / 2 };
+    let sx = 0;
+    let sy = 0;
+    for (const item of items) {
+      const c = blockCenter(item);
+      sx += c.x;
+      sy += c.y;
+    }
+    return { x: sx / items.length, y: sy / items.length };
+  }
+
+  function selectedBlocksOrAll() {
+    const ids = selected.size ? selected : new Set(model.blocks.map(b => b.id));
+    return model.blocks.filter(b => ids.has(b.id));
+  }
+
+  function sortByPlace(a, b) {
+    return (a.y - b.y) || (a.x - b.x);
+  }
+
+  function mergeSelection(skipSave = false) {
+    const candidates = selectedBlocksOrAll();
+    const units = candidates.filter(b => b.type === 'unit').sort(sortByPlace);
+    const tens = candidates.filter(b => b.type === 'ten').sort(sortByPlace);
+    if (units.length < 10 && tens.length < 10) return false;
+
+    if (!skipSave) saveState();
+    const removeIds = new Set();
+    const created = [];
+
+    for (let i = 0; i + 9 < units.length; i += 10) {
+      const group = units.slice(i, i + 10);
+      group.forEach(b => removeIds.add(b.id));
+      const c = averageCenter(group, 'ten');
+      const d = currentSize('ten');
+      const pos = clampPos('ten', c.x - d.w / 2, c.y - d.h / 2);
+      created.push({ id: makeId(), type: 'ten', x: pos.x, y: pos.y });
+      sparkleAt(c.x, c.y);
+    }
+
+    for (let i = 0; i + 9 < tens.length; i += 10) {
+      const group = tens.slice(i, i + 10);
+      group.forEach(b => removeIds.add(b.id));
+      const c = averageCenter(group, 'hundred');
+      const d = currentSize('hundred');
+      const pos = clampPos('hundred', c.x - d.w / 2, c.y - d.h / 2);
+      created.push({ id: makeId(), type: 'hundred', x: pos.x, y: pos.y });
+      sparkleAt(c.x, c.y);
+    }
+
+    model.blocks = model.blocks.filter(b => !removeIds.has(b.id)).concat(created);
+    selected = new Set(created.map(b => b.id));
+    render();
+    pulse(buttons.merge);
+    return true;
+  }
+
+  function expandedPositions(type, centerX, centerY) {
+    const d = currentSize(type);
+    const gap = 12;
+    const inset = safeInsets();
+    const usableW = stage.clientWidth - inset.left - inset.right;
+    const maxCols = Math.max(2, Math.floor((usableW + gap) / (d.w + gap)));
+    const cols = Math.min(5, maxCols);
+    const rows = Math.ceil(10 / cols);
+    const totalW = cols * d.w + (cols - 1) * gap;
+    const totalH = rows * d.h + (rows - 1) * gap;
+    const startX = clamp(centerX - totalW / 2, inset.left, Math.max(inset.left, stage.clientWidth - totalW - inset.right));
+    const startY = clamp(centerY - totalH / 2, inset.top, Math.max(inset.top, stage.clientHeight - totalH - inset.bottom));
+    const positions = [];
+    for (let i = 0; i < 10; i++) {
+      positions.push(clampPos(type, startX + (i % cols) * (d.w + gap), startY + Math.floor(i / cols) * (d.h + gap)));
+    }
+    return positions;
+  }
+
+  function splitSelection(skipSave = false) {
+    const ids = selected.size ? selected : new Set(model.blocks.map(b => b.id));
+    const targets = model.blocks.filter(b => ids.has(b.id) && (b.type === 'ten' || b.type === 'hundred'));
+    if (!targets.length) return false;
+
+    if (!skipSave) saveState();
+    const removeIds = new Set(targets.map(b => b.id));
+    const created = [];
+
+    for (const block of targets) {
+      const childType = block.type === 'hundred' ? 'ten' : 'unit';
+      const c = blockCenter(block);
+      const positions = expandedPositions(childType, c.x, c.y);
+      for (const pos of positions) {
+        created.push({ id: makeId(), type: childType, x: pos.x, y: pos.y });
+      }
+      sparkleAt(c.x, c.y);
+    }
+
+    model.blocks = model.blocks.filter(b => !removeIds.has(b.id)).concat(created);
+    selected = new Set(created.map(b => b.id));
+    render();
+    pulse(buttons.split);
+    return true;
+  }
+
+  function deleteSelection(skipSave = false) {
+    if (!selected.size) return false;
+    const targets = model.blocks.filter(b => selected.has(b.id));
+    if (!targets.length) return false;
+
+    if (!skipSave) saveState();
+    for (const b of targets) {
+      const c = blockCenter(b);
+      sparkleAt(c.x, c.y);
+    }
+    const removeIds = new Set(targets.map(b => b.id));
+    model.blocks = model.blocks.filter(b => !removeIds.has(b.id));
+    selected.clear();
+    render();
+    pulse(buttons.delete);
+    return true;
+  }
+
+  let drag = null;
+
+  function onBlockPointerDown(event) {
+    if (mode !== 'select') return;
+    event.preventDefault();
+    event.stopPropagation();
+
+    const id = event.currentTarget.dataset.id;
+    const wasSelected = selected.has(id);
+    if (!wasSelected) {
+      selected.add(id);
+      updateSelectionClasses();
+    }
+
+    drag = {
+      pointerId: event.pointerId,
+      clickId: id,
+      wasSelected,
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false,
+      saved: false,
+      ids: Array.from(selected),
+      origin: new Map(Array.from(selected).map(selId => {
+        const b = getBlock(selId);
+        return [selId, { x: b.x, y: b.y }];
+      }))
+    };
+
+    event.currentTarget.setPointerCapture(event.pointerId);
+    document.addEventListener('pointermove', onBlockPointerMove);
+    document.addEventListener('pointerup', onBlockPointerUp, { once: true });
+  }
+
+  function onBlockPointerMove(event) {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+
+    if (!drag.moved && Math.hypot(dx, dy) > 4) {
+      drag.moved = true;
+      drag.saved = true;
+      saveState();
+      drag.ids.forEach(id => {
+        const el = blockElement(id);
+        if (el) el.classList.add('dragging');
+      });
+    }
+
+    if (!drag.moved) return;
+
+    for (const id of drag.ids) {
+      const block = getBlock(id);
+      const origin = drag.origin.get(id);
+      if (!block || !origin) continue;
+      const pos = clampPos(block.type, origin.x + dx, origin.y + dy);
+      block.x = pos.x;
+      block.y = pos.y;
+      updateBlockPosition(id);
+    }
+    highlightDropButton(dropAction(event.clientX, event.clientY));
+  }
+
+  function dropAction(clientX, clientY) {
+    const el = document.elementFromPoint(clientX, clientY);
+    if (!el) return null;
+    if (el.closest('#mergeBtn')) return 'merge';
+    if (el.closest('#splitBtn')) return 'split';
+    if (el.closest('#deleteBtn')) return 'delete';
+    return null;
+  }
+
+  function highlightDropButton(action) {
+    buttons.merge.classList.toggle('drop-hot', action === 'merge');
+    buttons.split.classList.toggle('drop-hot', action === 'split');
+    buttons.delete.classList.toggle('drop-hot', action === 'delete');
+  }
+
+  function onBlockPointerUp(event) {
+    document.removeEventListener('pointermove', onBlockPointerMove);
+    highlightDropButton(null);
+    if (!drag || event.pointerId !== drag.pointerId) {
+      drag = null;
+      return;
+    }
+
+    if (!drag.moved) {
+      if (drag.wasSelected) selected.delete(drag.clickId);
+      else selected.add(drag.clickId);
+      updateSelectionClasses();
+    } else {
+      const action = dropAction(event.clientX, event.clientY);
+      if (action === 'merge') mergeSelection(drag.saved);
+      else if (action === 'split') splitSelection(drag.saved);
+      else if (action === 'delete') deleteSelection(drag.saved);
+      else render();
+    }
+    drag = null;
+  }
+
+  let marquee = null;
+
+  stage.addEventListener('pointerdown', event => {
+    if (mode !== 'select') return;
+    if (event.target.closest('.block') || event.target.closest('.toolbar') || event.target.closest('.palette')) return;
+    event.preventDefault();
+    selected.clear();
+    updateSelectionClasses();
+
+    const r = stageRect();
+    marquee = {
+      pointerId: event.pointerId,
+      x0: event.clientX - r.left,
+      y0: event.clientY - r.top,
+      x1: event.clientX - r.left,
+      y1: event.clientY - r.top,
+      moved: false
+    };
+    stage.setPointerCapture(event.pointerId);
+    updateMarquee();
+  });
+
+  stage.addEventListener('pointermove', event => {
+    if (!marquee || event.pointerId !== marquee.pointerId) return;
+    const r = stageRect();
+    marquee.x1 = clamp(event.clientX - r.left, 0, stage.clientWidth);
+    marquee.y1 = clamp(event.clientY - r.top, 0, stage.clientHeight);
+    marquee.moved = marquee.moved || Math.hypot(marquee.x1 - marquee.x0, marquee.y1 - marquee.y0) > 5;
+    updateMarquee();
+    selectIntersecting();
+  });
+
+  stage.addEventListener('pointerup', event => {
+    if (!marquee || event.pointerId !== marquee.pointerId) return;
+    if (!marquee.moved) selected.clear();
+    selectionBox.style.display = 'none';
+    updateSelectionClasses();
+    marquee = null;
+  });
+
+  function normalizedMarquee() {
+    const left = Math.min(marquee.x0, marquee.x1);
+    const top = Math.min(marquee.y0, marquee.y1);
+    const width = Math.abs(marquee.x1 - marquee.x0);
+    const height = Math.abs(marquee.y1 - marquee.y0);
+    return { left, top, right: left + width, bottom: top + height, width, height };
+  }
+
+  function updateMarquee() {
+    if (!marquee) return;
+    const box = normalizedMarquee();
+    selectionBox.style.display = 'block';
+    selectionBox.style.left = `${box.left}px`;
+    selectionBox.style.top = `${box.top}px`;
+    selectionBox.style.width = `${box.width}px`;
+    selectionBox.style.height = `${box.height}px`;
+  }
+
+  function selectIntersecting() {
+    if (!marquee) return;
+    const s = normalizedMarquee();
+    selected.clear();
+    for (const b of model.blocks) {
+      const d = currentSize(b.type);
+      const rect = { left: b.x, top: b.y, right: b.x + d.w, bottom: b.y + d.h };
+      const hit = rect.left < s.right && rect.right > s.left && rect.top < s.bottom && rect.bottom > s.top;
+      if (hit) selected.add(b.id);
+    }
+    updateSelectionClasses();
+  }
+
+  document.querySelectorAll('.palette-block').forEach(button => {
+    button.addEventListener('pointerdown', onPalettePointerDown);
+  });
+
+  function onPalettePointerDown(event) {
+    if (mode !== 'select') setMode('select');
+    event.preventDefault();
+    const source = event.currentTarget;
+    const type = source.dataset.type;
+    const startX = event.clientX;
+    const startY = event.clientY;
+    let ghost = null;
+    let moved = false;
+
+    const move = ev => {
+      const dist = Math.hypot(ev.clientX - startX, ev.clientY - startY);
+      if (!moved && dist > 5) {
+        moved = true;
+        ghost = document.createElement('div');
+        ghost.className = `block ${type} drag-ghost`;
+        ghost.innerHTML = `<span>${labels[type]}</span>`;
+        document.body.appendChild(ghost);
+      }
+      if (ghost) {
+        ghost.style.left = `${ev.clientX}px`;
+        ghost.style.top = `${ev.clientY}px`;
+      }
+    };
+
+    const up = ev => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+      if (ghost) ghost.remove();
+
+      const under = document.elementFromPoint(ev.clientX, ev.clientY);
+      const overControl = !!(under && under.closest('.toolbar, .palette'));
+
+      if (!moved) {
+        const pos = nextPosition(type);
+        saveState();
+        selected.clear();
+        addBlock(type, pos.x, pos.y, true);
+      } else if (!overControl) {
+        const r = stageRect();
+        const d = currentSize(type);
+        saveState();
+        selected.clear();
+        addBlock(type, ev.clientX - r.left - d.w / 2, ev.clientY - r.top - d.h / 2, true);
+      }
+    };
+
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up, { once: true });
+  }
+
+  function setMode(next) {
+    mode = next;
+    buttons.select.classList.toggle('active', mode === 'select');
+    buttons.pen.classList.toggle('active', mode === 'pen');
+    buttons.high.classList.toggle('active', mode === 'high');
+    canvas.style.pointerEvents = mode === 'select' ? 'none' : 'auto';
+    canvas.style.cursor = mode === 'high' ? 'cell' : 'crosshair';
+  }
+
+  buttons.select.addEventListener('click', () => setMode('select'));
+  buttons.pen.addEventListener('click', () => setMode(mode === 'pen' ? 'select' : 'pen'));
+  buttons.high.addEventListener('click', () => setMode(mode === 'high' ? 'select' : 'high'));
+  buttons.merge.addEventListener('click', () => mergeSelection(false));
+  buttons.split.addEventListener('click', () => splitSelection(false));
+  buttons.delete.addEventListener('click', () => deleteSelection(false));
+  buttons.undo.addEventListener('click', () => {
+    const prev = history.pop();
+    if (prev) restoreState(prev);
+  });
+
+  buttons.fullscreen.addEventListener('click', async () => {
+    try {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen();
+      else await document.exitFullscreen();
+      setTimeout(() => resizeCanvas(true), 180);
+    } catch (e) {}
+  });
+
+  document.addEventListener('keydown', event => {
+    const tag = (event.target && event.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea') return;
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
+      event.preventDefault();
+      const prev = history.pop();
+      if (prev) restoreState(prev);
+    } else if (event.key === 'Delete' || event.key === 'Backspace') {
+      event.preventDefault();
+      deleteSelection(false);
+    }
+  });
+
+  let drawing = null;
+
+  canvas.addEventListener('pointerdown', event => {
+    if (mode === 'select') return;
+    event.preventDefault();
+    saveState();
+    const p = canvasPoint(event);
+    drawing = { pointerId: event.pointerId, lastX: p.x, lastY: p.y };
+    canvas.setPointerCapture(event.pointerId);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    setStrokeStyle();
+  });
+
+  canvas.addEventListener('pointermove', event => {
+    if (!drawing || event.pointerId !== drawing.pointerId) return;
+    event.preventDefault();
+    const p = canvasPoint(event);
+    const midX = (drawing.lastX + p.x) / 2;
+    const midY = (drawing.lastY + p.y) / 2;
+    ctx.quadraticCurveTo(drawing.lastX, drawing.lastY, midX, midY);
+    ctx.stroke();
+    drawing.lastX = p.x;
+    drawing.lastY = p.y;
+  });
+
+  canvas.addEventListener('pointerup', endDrawing);
+  canvas.addEventListener('pointercancel', endDrawing);
+
+  function endDrawing(event) {
+    if (!drawing || event.pointerId !== drawing.pointerId) return;
+    const p = canvasPoint(event);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    ctx.closePath();
+    drawing = null;
+  }
+
+  function canvasPoint(event) {
+    const r = canvas.getBoundingClientRect();
+    return { x: event.clientX - r.left, y: event.clientY - r.top };
+  }
+
+  function setStrokeStyle() {
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.globalCompositeOperation = 'source-over';
+    if (mode === 'high') {
+      ctx.strokeStyle = 'rgba(255, 225, 32, .38)';
+      ctx.lineWidth = 30;
+    } else {
+      ctx.strokeStyle = 'rgba(43, 38, 50, .90)';
+      ctx.lineWidth = 4.5;
+    }
+  }
+
+  function resizeCanvas(preserve = true) {
+    const drawingData = preserve ? captureDrawing() : '';
+    const r = stageRect();
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    canvas.width = Math.max(1, Math.round(r.width * dpr));
+    canvas.height = Math.max(1, Math.round(r.height * dpr));
+    canvas.style.width = `${r.width}px`;
+    canvas.style.height = `${r.height}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    restoreDrawing(drawingData);
+
+    for (const block of model.blocks) {
+      const pos = clampPos(block.type, block.x, block.y);
+      block.x = pos.x;
+      block.y = pos.y;
+    }
+    render();
+  }
+
+  window.addEventListener('resize', () => resizeCanvas(true));
+  document.addEventListener('fullscreenchange', () => resizeCanvas(true));
+
+  resizeCanvas(false);
+  updateUndo();
+  setMode('select');
+})();
+</script>
+</body>
+</html>
