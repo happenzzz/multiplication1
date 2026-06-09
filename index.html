@@ -6,22 +6,22 @@
 <title>십진 모형 놀이</title>
 <style>
   :root{
-    --u:54px;
-    --ink:#243049;
-    --soft:#6c748a;
+    --u:56px;
+    --ink:#24304a;
+    --soft:#64708a;
     --panel:rgba(255,255,255,.82);
-    --one:#ffd8e5;
-    --one2:#ffc3d4;
-    --one-border:#ff6f95;
-    --ten:#9be9f4;
-    --ten2:#78dce9;
-    --ten-border:#2db2c8;
-    --hundred:#d5f6ca;
-    --hundred2:#bdf0af;
-    --hundred-border:#66bd59;
-    --purple:#8f7bff;
-    --yellow:#ffe66d;
-    --shadow:0 20px 58px rgba(70,58,102,.14),0 8px 20px rgba(70,58,102,.08);
+    --one:#ffd9e7;
+    --one2:#ffc1d4;
+    --one-border:#ff6f98;
+    --ten:#a0ebf4;
+    --ten2:#7bdde9;
+    --ten-border:#27aec4;
+    --hundred:#d4f6c8;
+    --hundred2:#b9eda9;
+    --hundred-border:#62bc56;
+    --purple:#8d7aff;
+    --yellow:#ffe76f;
+    --shadow:0 20px 56px rgba(67,58,91,.15),0 8px 20px rgba(67,58,91,.08);
   }
 
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -29,11 +29,11 @@
     margin:0;width:100%;height:100%;overflow:hidden;color:var(--ink);
     font-family:ui-rounded,"Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
     background:
-      radial-gradient(circle at 10% 9%,rgba(255,232,114,.46),transparent 29%),
-      radial-gradient(circle at 88% 10%,rgba(147,235,249,.38),transparent 31%),
-      radial-gradient(circle at 13% 92%,rgba(255,197,216,.34),transparent 34%),
-      radial-gradient(circle at 86% 88%,rgba(209,248,198,.42),transparent 34%),
-      linear-gradient(135deg,#fffdf7 0%,#f2fbff 52%,#fff9fc 100%);
+      radial-gradient(circle at 10% 9%,rgba(255,230,113,.48),transparent 29%),
+      radial-gradient(circle at 88% 10%,rgba(145,235,249,.40),transparent 31%),
+      radial-gradient(circle at 13% 91%,rgba(255,196,218,.34),transparent 34%),
+      radial-gradient(circle at 86% 88%,rgba(210,248,198,.44),transparent 34%),
+      linear-gradient(135deg,#fffdf7 0%,#f1fbff 52%,#fff8fc 100%);
   }
   button{font:inherit;border:0;background:none;padding:0;cursor:pointer;user-select:none;touch-action:none;color:inherit}
 
@@ -41,17 +41,17 @@
   #stage{
     position:absolute;z-index:1;inset:8px;overflow:hidden;border-radius:34px;touch-action:none;
     background:
-      linear-gradient(rgba(255,255,255,.86),rgba(255,255,255,.68)),
-      radial-gradient(circle at 20% 18%,rgba(147,235,249,.23),transparent 40%),
+      linear-gradient(rgba(255,255,255,.90),rgba(255,255,255,.70)),
+      radial-gradient(circle at 20% 18%,rgba(147,235,249,.22),transparent 40%),
       radial-gradient(circle at 82% 18%,rgba(255,196,216,.24),transparent 38%),
       radial-gradient(circle at 68% 88%,rgba(210,248,198,.28),transparent 42%);
     border:1px solid rgba(126,105,170,.14);box-shadow:var(--shadow);
   }
   #stage::before{
-    content:"";position:absolute;inset:0;pointer-events:none;opacity:.12;
-    background-image:radial-gradient(circle,rgba(89,79,125,.36) 1.1px,transparent 1.55px);
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:.13;
+    background-image:radial-gradient(circle,rgba(89,79,125,.34) 1.1px,transparent 1.55px);
     background-size:34px 34px;
-    mask-image:linear-gradient(to bottom,transparent 0,#000 8%,#000 91%,transparent 100%);
+    mask-image:linear-gradient(to bottom,transparent 0,#000 7%,#000 91%,transparent 100%);
   }
   #blockLayer,#fxLayer{position:absolute;inset:0;pointer-events:none}
   #blockLayer{z-index:20}
@@ -60,7 +60,7 @@
   #drawCanvas.active{pointer-events:auto}
 
   .palette{
-    position:absolute;z-index:210;left:max(16px,env(safe-area-inset-left));top:50%;transform:translateY(-50%);
+    position:absolute;z-index:210;left:max(14px,env(safe-area-inset-left));top:50%;transform:translateY(-50%);
     display:flex;flex-direction:column;align-items:center;gap:13px;padding:13px;border-radius:30px;
     background:var(--panel);backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px) saturate(1.2);
     border:1px solid rgba(126,105,170,.14);box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.9);
@@ -70,7 +70,7 @@
     font-family:Georgia,"Times New Roman",serif;font-weight:850;color:#172238;
     transition:transform .2s cubic-bezier(.2,1.35,.36,1),filter .2s ease,box-shadow .2s ease;
   }
-  .stamp::after,.block::after,.ghost::after{
+  .stamp::after,.block::after,.ghost::after,.clone-preview::after{
     content:"";position:absolute;right:8px;top:8px;width:12px;height:12px;border-radius:999px;
     background:rgba(255,255,255,.66);box-shadow:-5px 7px 0 -4px rgba(255,255,255,.86);pointer-events:none;
   }
@@ -80,15 +80,33 @@
   .stamp.ten{width:78px;height:54px;border-radius:15px;background:linear-gradient(145deg,var(--ten),var(--ten2));border:2px solid var(--ten-border);font-size:27px;box-shadow:0 9px 19px rgba(46,180,202,.22)}
   .stamp.hundred{width:82px;height:82px;border-radius:18px;background:linear-gradient(145deg,var(--hundred),var(--hundred2));border:2px solid var(--hundred-border);font-size:27px;box-shadow:0 9px 19px rgba(101,191,90,.22)}
 
-  .toolbar{
-    position:absolute;z-index:300;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);
-    display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:999px;max-width:calc(100vw - 18px);
-    overflow-x:auto;scrollbar-width:none;background:var(--panel);backdrop-filter:blur(18px) saturate(1.25);-webkit-backdrop-filter:blur(18px) saturate(1.25);
+  #bottomDock{
+    position:absolute;z-index:310;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);
+    width:min(1180px,calc(100vw - 18px));display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none;
+  }
+  .colorbar,.toolbar{
+    pointer-events:auto;max-width:100%;overflow-x:auto;scrollbar-width:none;
+    background:var(--panel);backdrop-filter:blur(18px) saturate(1.25);-webkit-backdrop-filter:blur(18px) saturate(1.25);
     border:1px solid rgba(126,105,170,.15);box-shadow:0 16px 38px rgba(58,49,86,.14),inset 0 1px 0 rgba(255,255,255,.9);
   }
-  .toolbar::-webkit-scrollbar{display:none}
+  .colorbar::-webkit-scrollbar,.toolbar::-webkit-scrollbar{display:none}
+  .colorbar{
+    display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:999px;
+  }
+  .color-group{display:flex;align-items:center;gap:5px;white-space:nowrap}
+  .color-label{font-size:11px;font-weight:950;letter-spacing:-.06em;color:#48516b;margin:0 2px 0 1px}
+  .swatch{
+    width:25px;height:25px;flex:0 0 auto;border-radius:999px;background:var(--c);
+    box-shadow:inset 0 0 0 2px rgba(255,255,255,.86),0 3px 9px rgba(43,35,65,.14);
+    transition:transform .16s cubic-bezier(.2,1.3,.35,1),box-shadow .16s ease;
+  }
+  .swatch:active{transform:scale(.88)}
+  .swatch.active{box-shadow:0 0 0 4px rgba(141,122,255,.24),inset 0 0 0 2px rgba(255,255,255,.95),0 6px 12px rgba(43,35,65,.18);transform:translateY(-1px)}
+  .toolbar{
+    display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:999px;
+  }
   .tool-btn{
-    position:relative;width:58px;height:50px;flex:0 0 auto;border-radius:18px;
+    position:relative;width:62px;height:50px;flex:0 0 auto;border-radius:18px;
     background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.80));
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
     box-shadow:inset 0 0 0 1px rgba(82,70,125,.10),0 7px 16px rgba(61,51,86,.10);
@@ -97,7 +115,7 @@
   .tool-btn:hover{transform:translateY(-2px) rotate(-1deg);box-shadow:inset 0 0 0 1px rgba(82,70,125,.15),0 12px 22px rgba(61,51,86,.14)}
   .tool-btn:active{transform:scale(.94)}
   .tool-btn.active{background:linear-gradient(180deg,#fff8bd,#fff2a0);box-shadow:0 0 0 4px rgba(255,226,96,.25),inset 0 0 0 1px rgba(173,135,20,.22),0 10px 21px rgba(166,125,22,.14)}
-  .tool-btn.drop-hot{transform:translateY(-3px) scale(1.08);background:linear-gradient(180deg,#f7f3ff,#ebe6ff);box-shadow:0 0 0 8px rgba(140,118,255,.18),inset 0 0 0 2px rgba(140,118,255,.32),0 14px 27px rgba(140,118,255,.21)}
+  .tool-btn.drop-hot{transform:translateY(-4px) scale(1.08);background:linear-gradient(180deg,#f7f3ff,#ebe6ff);box-shadow:0 0 0 8px rgba(140,118,255,.18),inset 0 0 0 2px rgba(140,118,255,.32),0 14px 27px rgba(140,118,255,.21)}
   .tool-btn.disabled{opacity:.45}
   .tool-btn .ico{font-size:20px;line-height:1;filter:drop-shadow(0 1px 0 rgba(255,255,255,.9))}
   .tool-btn .txt{font-size:9px;font-weight:950;letter-spacing:-.08em;line-height:1;white-space:nowrap;color:#30384d;margin-top:1px}
@@ -110,7 +128,7 @@
   }
   .block:active{cursor:grabbing}
   .block.one{width:var(--u);height:var(--u);border-radius:14px;background:linear-gradient(145deg,var(--one),var(--one2));border:2px solid var(--one-border);font-size:calc(var(--u)*.50);box-shadow:0 8px 18px rgba(255,113,146,.21),inset 0 1px 0 rgba(255,255,255,.68)}
-  .block.ten{width:calc(var(--u)*1.28);height:var(--u);border-radius:14px;background:linear-gradient(145deg,var(--ten),var(--ten2));border:2px solid var(--ten-border);font-size:calc(var(--u)*.50);box-shadow:0 8px 18px rgba(46,180,202,.21),inset 0 1px 0 rgba(255,255,255,.68)}
+  .block.ten{width:calc(var(--u)*1.30);height:var(--u);border-radius:14px;background:linear-gradient(145deg,var(--ten),var(--ten2));border:2px solid var(--ten-border);font-size:calc(var(--u)*.50);box-shadow:0 8px 18px rgba(46,180,202,.21),inset 0 1px 0 rgba(255,255,255,.68)}
   .block.hundred{width:calc(var(--u)*1.68);height:calc(var(--u)*1.68);border-radius:18px;background:linear-gradient(145deg,var(--hundred),var(--hundred2));border:2px solid var(--hundred-border);font-size:calc(var(--u)*.46);box-shadow:0 9px 20px rgba(101,191,90,.21),inset 0 1px 0 rgba(255,255,255,.68)}
   .block.selected{filter:saturate(1.16) brightness(1.02);box-shadow:0 0 0 4px rgba(255,226,96,.64),0 12px 25px rgba(53,46,78,.18),inset 0 1px 0 rgba(255,255,255,.72)}
   .block.dragging{filter:saturate(1.18);transition:none;transform:translate(var(--x),var(--y)) scale(1.035);box-shadow:0 21px 42px rgba(51,43,72,.22),0 0 0 4px rgba(140,118,255,.30),inset 0 1px 0 rgba(255,255,255,.74)}
@@ -118,7 +136,7 @@
   .block.fade-out{pointer-events:none;animation:fadeOut .24s ease forwards}
   .block.fold-out{pointer-events:none;animation:foldOut .28s cubic-bezier(.68,0,.8,.2) forwards}
 
-  .ghost,.afterimage{
+  .ghost,.afterimage,.clone-preview{
     position:fixed;z-index:360;pointer-events:none;display:grid;place-items:center;font-family:Georgia,"Times New Roman",serif;font-weight:850;color:#172238;
   }
   .ghost{opacity:.86;transform:translate(-50%,-50%) scale(1.04);filter:drop-shadow(0 14px 18px rgba(48,40,70,.20))}
@@ -135,11 +153,11 @@
     background:rgba(140,118,255,.10);box-shadow:0 0 0 8px rgba(140,118,255,.08);animation:selectFade .78s ease-out forwards;
   }
   .afterimage{
-    position:absolute;left:0;top:0;z-index:108;opacity:.32;filter:saturate(1.05);animation:trailFade .62s ease-out forwards;
+    position:absolute;left:0;top:0;z-index:108;opacity:.30;filter:saturate(1.05);animation:trailFade .62s ease-out forwards;
     transform:translate(var(--x),var(--y));
   }
   .afterimage.one{width:var(--u);height:var(--u);border-radius:14px;background:linear-gradient(145deg,var(--one),var(--one2));border:2px solid var(--one-border);font-size:calc(var(--u)*.50)}
-  .afterimage.ten{width:calc(var(--u)*1.28);height:var(--u);border-radius:14px;background:linear-gradient(145deg,var(--ten),var(--ten2));border:2px solid var(--ten-border);font-size:calc(var(--u)*.50)}
+  .afterimage.ten{width:calc(var(--u)*1.30);height:var(--u);border-radius:14px;background:linear-gradient(145deg,var(--ten),var(--ten2));border:2px solid var(--ten-border);font-size:calc(var(--u)*.50)}
   .afterimage.hundred{width:calc(var(--u)*1.68);height:calc(var(--u)*1.68);border-radius:18px;background:linear-gradient(145deg,var(--hundred),var(--hundred2));border:2px solid var(--hundred-border);font-size:calc(var(--u)*.46)}
 
   .spark{position:absolute;z-index:135;width:10px;height:10px;border-radius:999px;pointer-events:none;background:rgba(255,226,96,.98);box-shadow:0 0 0 5px rgba(255,255,255,.42);animation:sparkle .62s ease-out forwards}
@@ -149,15 +167,15 @@
   @keyframes fadeOut{to{opacity:0;transform:translate(var(--x),var(--y)) scale(.68) rotate(6deg)}}
   @keyframes foldOut{to{opacity:0;transform:translate(var(--x),var(--y)) scale(.16);filter:blur(1px)}}
   @keyframes selectFade{0%{opacity:.85;transform:scale(1)}100%{opacity:0;transform:scale(1.035)}}
-  @keyframes trailFade{0%{opacity:.32;transform:translate(var(--x),var(--y)) scale(1)}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(1.08)}}
+  @keyframes trailFade{0%{opacity:.30;transform:translate(var(--x),var(--y)) scale(1)}100%{opacity:0;transform:translate(var(--x),var(--y)) scale(1.08)}}
   @keyframes sparkle{0%{opacity:1;transform:translate(-50%,-50%) scale(.65)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.08)}}
   @keyframes ring{0%{opacity:.9;transform:translate(-50%,-50%) scale(.4)}100%{opacity:0;transform:translate(-50%,-50%) scale(3.3)}}
 
-  @media (max-width:760px){
-    #stage{inset:6px;border-radius:27px}.toolbar{gap:6px;padding:6px;justify-content:flex-start}.tool-btn{width:51px;height:47px;border-radius:16px}.tool-btn .ico{font-size:18px}.tool-btn .txt{font-size:8px}.palette{left:8px;gap:10px;padding:9px;border-radius:25px}.stamp.one{width:48px;height:48px;font-size:25px}.stamp.ten{width:68px;height:48px;font-size:24px}.stamp.hundred{width:62px;height:62px;font-size:22px}
+  @media (max-width:860px){
+    #stage{inset:6px;border-radius:27px}.toolbar{gap:6px;padding:6px;justify-content:flex-start}.tool-btn{width:55px;height:47px;border-radius:16px}.tool-btn .ico{font-size:18px}.tool-btn .txt{font-size:8px}.palette{left:8px;gap:10px;padding:9px;border-radius:25px}.stamp.one{width:48px;height:48px;font-size:25px}.stamp.ten{width:68px;height:48px;font-size:24px}.stamp.hundred{width:62px;height:62px;font-size:22px}.colorbar{padding:5px 8px}.swatch{width:23px;height:23px}.color-label{font-size:10px}
   }
-  @media (max-height:520px){
-    .toolbar{bottom:7px}.palette{gap:8px;padding:8px}.tool-btn{height:42px}.stamp.one{width:46px;height:46px}.stamp.ten{width:64px;height:46px}.stamp.hundred{width:60px;height:60px}
+  @media (max-height:560px){
+    #bottomDock{bottom:7px;gap:5px}.toolbar{padding:6px}.colorbar{padding:4px 8px}.tool-btn{height:42px}.palette{gap:8px;padding:8px}.stamp.one{width:46px;height:46px}.stamp.ten{width:64px;height:46px}.stamp.hundred{width:60px;height:60px}
   }
 </style>
 </head>
@@ -176,15 +194,37 @@
     <button class="stamp hundred" data-type="hundred" aria-label="백모형">100</button>
   </div>
 
-  <div class="toolbar" aria-label="도구">
-    <button class="tool-btn" id="undoBtn" aria-label="되돌리기" title="되돌리기"><span class="ico">↶</span><span class="txt">되돌리기</span></button>
-    <button class="tool-btn" id="mergeBtn" data-drop-action="merge" aria-label="합치기" title="합치기"><span class="ico">🧲</span><span class="txt">합치기</span></button>
-    <button class="tool-btn" id="splitBtn" data-drop-action="split" aria-label="쪼개기" title="쪼개기"><span class="ico">✂️</span><span class="txt">쪼개기</span></button>
-    <button class="tool-btn" id="deleteBtn" data-drop-action="delete" aria-label="삭제" title="삭제"><span class="ico">🧺</span><span class="txt">삭제</span></button>
-    <button class="tool-btn" id="penBtn" aria-label="펜" title="펜"><span class="ico">✏️</span><span class="txt">펜</span></button>
-    <button class="tool-btn" id="highBtn" aria-label="형광펜" title="형광펜"><span class="ico">🖍️</span><span class="txt">형광펜</span></button>
-    <button class="tool-btn" id="eraserBtn" aria-label="지우개" title="지우개"><span class="ico">🧽</span><span class="txt">지우개</span></button>
-    <button class="tool-btn" id="fullBtn" aria-label="전체화면" title="전체화면"><span class="ico">⛶</span><span class="txt">전체</span></button>
+  <div id="bottomDock">
+    <div class="colorbar" aria-label="색깔">
+      <div class="color-group" aria-label="펜 색깔">
+        <span class="color-label">펜</span>
+        <button class="swatch pen-swatch active" data-color="#24304a" style="--c:#24304a" aria-label="검정 펜"></button>
+        <button class="swatch pen-swatch" data-color="#2563eb" style="--c:#2563eb" aria-label="파란 펜"></button>
+        <button class="swatch pen-swatch" data-color="#16a34a" style="--c:#16a34a" aria-label="초록 펜"></button>
+        <button class="swatch pen-swatch" data-color="#ef4444" style="--c:#ef4444" aria-label="빨간 펜"></button>
+        <button class="swatch pen-swatch" data-color="#8b5cf6" style="--c:#8b5cf6" aria-label="보라 펜"></button>
+      </div>
+      <div class="color-group" aria-label="형광펜 색깔">
+        <span class="color-label">형광</span>
+        <button class="swatch high-swatch active" data-color="#ffe74f" style="--c:#ffe74f" aria-label="노란 형광펜"></button>
+        <button class="swatch high-swatch" data-color="#7cff9b" style="--c:#7cff9b" aria-label="초록 형광펜"></button>
+        <button class="swatch high-swatch" data-color="#72d7ff" style="--c:#72d7ff" aria-label="파란 형광펜"></button>
+        <button class="swatch high-swatch" data-color="#ff9bd2" style="--c:#ff9bd2" aria-label="분홍 형광펜"></button>
+        <button class="swatch high-swatch" data-color="#d6b4ff" style="--c:#d6b4ff" aria-label="보라 형광펜"></button>
+      </div>
+    </div>
+
+    <div class="toolbar" aria-label="도구">
+      <button class="tool-btn" id="undoBtn" aria-label="되돌리기" title="되돌리기"><span class="ico">↶</span><span class="txt">되돌리기</span></button>
+      <button class="tool-btn" id="cloneBtn" data-drop-action="clone" aria-label="복제" title="복제"><span class="ico">🐣</span><span class="txt">복제</span></button>
+      <button class="tool-btn" id="mergeBtn" data-drop-action="merge" aria-label="합치기" title="합치기"><span class="ico">🧲</span><span class="txt">합치기</span></button>
+      <button class="tool-btn" id="splitBtn" data-drop-action="split" aria-label="쪼개기" title="쪼개기"><span class="ico">✂️</span><span class="txt">쪼개기</span></button>
+      <button class="tool-btn" id="deleteBtn" data-drop-action="delete" aria-label="삭제" title="삭제"><span class="ico">🧺</span><span class="txt">삭제</span></button>
+      <button class="tool-btn" id="penBtn" aria-label="펜" title="펜"><span class="ico">✏️</span><span class="txt">펜</span></button>
+      <button class="tool-btn" id="highBtn" aria-label="형광펜" title="형광펜"><span class="ico">🖍️</span><span class="txt">형광펜</span></button>
+      <button class="tool-btn" id="eraserBtn" aria-label="지우개" title="지우개"><span class="ico">🧽</span><span class="txt">지우개</span></button>
+      <button class="tool-btn" id="fullBtn" aria-label="전체화면" title="전체화면"><span class="ico">⛶</span><span class="txt">전체</span></button>
+    </div>
   </div>
 </div>
 
@@ -197,10 +237,9 @@
   const canvas = document.getElementById('drawCanvas');
   const ctx = canvas.getContext('2d');
   const selectionBox = document.getElementById('selectionBox');
-  const palette = document.querySelector('.palette');
-  const toolbar = document.querySelector('.toolbar');
 
   const undoBtn = document.getElementById('undoBtn');
+  const cloneBtn = document.getElementById('cloneBtn');
   const mergeBtn = document.getElementById('mergeBtn');
   const splitBtn = document.getElementById('splitBtn');
   const deleteBtn = document.getElementById('deleteBtn');
@@ -210,10 +249,13 @@
   const fullBtn = document.getElementById('fullBtn');
   const stamps = [...document.querySelectorAll('.stamp')];
   const dropButtons = [...document.querySelectorAll('[data-drop-action]')];
+  const penSwatches = [...document.querySelectorAll('.pen-swatch')];
+  const highSwatches = [...document.querySelectorAll('.high-swatch')];
 
   const labels = { one:'1', ten:'10', hundred:'100' };
   const higher = { one:'ten', ten:'hundred' };
   const lower = { ten:'one', hundred:'ten' };
+  const MAX_HISTORY = 90;
 
   let blocks = new Map();
   let selected = new Set();
@@ -224,133 +266,87 @@
   let busy = false;
   let history = [];
   let dpr = Math.max(1, window.devicePixelRatio || 1);
-  let spawn = { x:150, y:26, rowH:0 };
+  let autoIndex = 0;
+  let penColor = '#24304a';
+  let highColor = '#ffe74f';
 
-  function clamp(v,min,max){ return Math.min(Math.max(v,min), Math.max(min,max)); }
+  const clamp = (v,min,max) => Math.min(Math.max(v,min), Math.max(min,max));
+  const distance = (a,b) => Math.hypot(a.x-b.x, a.y-b.y);
 
   function stageRect(){ return stage.getBoundingClientRect(); }
-
   function localPoint(ev){
     const r = stageRect();
     return { x:ev.clientX-r.left, y:ev.clientY-r.top, inside:ev.clientX>=r.left && ev.clientX<=r.right && ev.clientY>=r.top && ev.clientY<=r.bottom };
   }
-
   function intersects(a,b){ return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top; }
 
-  function safeInsets(){
-    const s = stageRect();
-    const p = palette.getBoundingClientRect();
-    const t = toolbar.getBoundingClientRect();
-    let left = 14, right = 14, top = 14, bottom = 14;
-    if (intersects(s,p)) left = Math.max(left, p.right - s.left + 14);
-    if (intersects(s,t)) bottom = Math.max(bottom, s.bottom - t.top + 14);
-    return { left, right, top, bottom };
-  }
-
   function fitUnit(){
-    const r = stageRect();
-    const inset = safeInsets();
-    const w = Math.max(320, r.width - inset.left - inset.right);
-    const h = Math.max(240, r.height - inset.top - inset.bottom);
-    const u = Math.max(38, Math.min(58, Math.floor(Math.min(w/13.5, h/7.2))));
+    const short = Math.min(window.innerWidth, window.innerHeight);
+    const u = clamp(Math.round(short / 15.5), 42, 62);
     stage.style.setProperty('--u', `${u}px`);
   }
 
-  function blockSize(type){
-    const u = parseFloat(getComputedStyle(stage).getPropertyValue('--u')) || 54;
-    if (type === 'hundred') return { w:u*1.68, h:u*1.68 };
-    if (type === 'ten') return { w:u*1.28, h:u };
-    return { w:u, h:u };
-  }
-
-  function clampPos(type,x,y){
-    const s = blockSize(type);
-    const inset = safeInsets();
-    return {
-      x:clamp(x, inset.left, stage.clientWidth - inset.right - s.w),
-      y:clamp(y, inset.top, stage.clientHeight - inset.bottom - s.h)
-    };
-  }
-
-  function updateCanvasSize(keep=true){
-    const r = stageRect();
+  function resizeCanvas(keep = true){
+    const rect = stage.getBoundingClientRect();
     const old = document.createElement('canvas');
-    const oldDpr = dpr;
-    let oldCssW = 0, oldCssH = 0;
     if (keep && canvas.width && canvas.height) {
       old.width = canvas.width;
       old.height = canvas.height;
       old.getContext('2d').drawImage(canvas,0,0);
-      oldCssW = canvas.width / oldDpr;
-      oldCssH = canvas.height / oldDpr;
     }
     dpr = Math.max(1, window.devicePixelRatio || 1);
-    canvas.width = Math.max(1, Math.round(r.width*dpr));
-    canvas.height = Math.max(1, Math.round(r.height*dpr));
-    canvas.style.width = `${r.width}px`;
-    canvas.style.height = `${r.height}px`;
+    canvas.width = Math.max(1, Math.round(rect.width * dpr));
+    canvas.height = Math.max(1, Math.round(rect.height * dpr));
+    canvas.style.width = `${rect.width}px`;
+    canvas.style.height = `${rect.height}px`;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if (keep && old.width) ctx.drawImage(old,0,0,old.width,old.height,0,0,canvas.width,canvas.height);
     ctx.setTransform(dpr,0,0,dpr,0,0);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    if (keep && old.width) ctx.drawImage(old,0,0,oldCssW,oldCssH,0,0,r.width,r.height);
   }
 
-  function snapshotInk(){
-    try { return canvas.toDataURL('image/png'); } catch(_e) { return ''; }
+  function clearCanvas(){
+    ctx.save();
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.restore();
   }
 
-  function snapshot(){
-    return {
-      blocks:[...blocks.values()].map(b => ({ id:b.id, type:b.type, x:b.x, y:b.y, z:b.z })),
-      selected:[...selected],
-      nextId, topZ,
-      spawn:{...spawn},
-      ink:snapshotInk()
-    };
+  function captureDrawing(){
+    try { return canvas.toDataURL('image/png'); }
+    catch(_e) { return ''; }
   }
 
-  function saveState(){
-    history.push(snapshot());
-    if (history.length > 80) history.shift();
-    updateUndo();
-  }
-
-  function updateUndo(){ undoBtn.classList.toggle('disabled', history.length === 0); }
-
-  function clearCanvas(){ ctx.clearRect(0,0,stage.clientWidth,stage.clientHeight); }
-
-  function restoreInk(data){
+  function restoreDrawing(data){
     clearCanvas();
     if (!data) return;
     const img = new Image();
     img.onload = () => {
-      clearCanvas();
-      ctx.drawImage(img,0,0,stage.clientWidth,stage.clientHeight);
+      ctx.save();
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      ctx.restore();
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
     };
     img.src = data;
   }
 
-  function clearBlocksDom(){
-    blockLayer.querySelectorAll('.block').forEach(el => el.remove());
+  function blockSize(type){
+    const u = parseFloat(getComputedStyle(stage).getPropertyValue('--u')) || 56;
+    if (type === 'hundred') return { w:u*1.68, h:u*1.68 };
+    if (type === 'ten') return { w:u*1.30, h:u };
+    return { w:u, h:u };
   }
 
-  function restore(state){
-    clearBlocksDom();
-    blocks.clear();
-    selected = new Set(state.selected || []);
-    nextId = state.nextId || 1;
-    topZ = state.topZ || 30;
-    spawn = state.spawn || { x:safeInsets().left+16, y:safeInsets().top+16, rowH:0 };
-    (state.blocks || []).forEach(item => createBlock(item.type,item.x,item.y,{ id:item.id, z:item.z, silent:true }));
-    updateSelection();
-    restoreInk(state.ink);
-    updateUndo();
-  }
-
-  function undo(){
-    if (!history.length) { pulse(undoBtn); return; }
-    restore(history.pop());
-    pulse(undoBtn);
+  function clampBlock(b){
+    const s = blockSize(b.type);
+    b.x = clamp(b.x, 3, stage.clientWidth - s.w - 3);
+    b.y = clamp(b.y, 3, stage.clientHeight - s.h - 3);
   }
 
   function positionBlock(b){
@@ -359,267 +355,346 @@
     b.el.style.zIndex = b.z;
   }
 
-  function createBlock(type,x,y,opt={}){
+  function setSelected(id, on){
+    const b = blocks.get(id);
+    if (!b) return;
+    if (on) selected.add(id); else selected.delete(id);
+    b.el.classList.toggle('selected', selected.has(id));
+  }
+
+  function clearSelection(){
+    selected.forEach(id => {
+      const b = blocks.get(id);
+      if (b) b.el.classList.remove('selected');
+    });
+    selected.clear();
+  }
+
+  function selectedBlocks(){
+    return [...selected].map(id => blocks.get(id)).filter(Boolean);
+  }
+
+  function snapshot(){
+    return {
+      blocks:[...blocks.values()].map(b => ({ id:b.id, type:b.type, x:b.x, y:b.y, z:b.z })),
+      selected:[...selected],
+      nextId, topZ, autoIndex,
+      drawing:captureDrawing()
+    };
+  }
+
+  function saveState(){
+    history.push(snapshot());
+    if (history.length > MAX_HISTORY) history.shift();
+    updateUndoButton();
+  }
+
+  function updateUndoButton(){
+    undoBtn.classList.toggle('disabled', history.length === 0);
+  }
+
+  function restoreState(state){
+    blockLayer.querySelectorAll('.block').forEach(el => el.remove());
+    fxLayer.innerHTML = '';
+    blocks.clear();
+    selected.clear();
+    nextId = state.nextId || 1;
+    topZ = state.topZ || 30;
+    autoIndex = state.autoIndex || 0;
+    state.blocks.forEach(item => addBlock(item.type, item.x, item.y, { id:item.id, z:item.z, silent:true }));
+    (state.selected || []).forEach(id => setSelected(id, true));
+    restoreDrawing(state.drawing);
+    updateUndoButton();
+  }
+
+  function undo(){
+    if (!history.length) { pulse(undoBtn); return; }
+    const state = history.pop();
+    restoreState(state);
+    pulse(undoBtn);
+  }
+
+  function addBlock(type, x, y, opt = {}){
     const id = opt.id ?? nextId++;
     const el = document.createElement('div');
     el.className = `block ${type}`;
-    el.dataset.id = String(id);
-    el.innerHTML = `<span>${labels[type]}</span>`;
+    el.dataset.id = id;
+    el.dataset.type = type;
+    el.textContent = labels[type];
     el.setAttribute('aria-label', labels[type]);
     blockLayer.appendChild(el);
-    const b = { id, type, x, y, z: opt.z ?? topZ++, el };
-    blocks.set(id,b);
-    const pos = clampPos(type,b.x,b.y);
-    b.x = pos.x; b.y = pos.y;
+    const s = blockSize(type);
+    const b = { id, type, x: opt.center ? x - s.w/2 : x, y: opt.center ? y - s.h/2 : y, z: opt.z ?? topZ++, el };
+    blocks.set(id, b);
+    clampBlock(b);
     positionBlock(b);
     el.addEventListener('pointerdown', onBlockPointerDown);
     if (!opt.silent) {
       requestAnimationFrame(() => el.classList.add('pop-in'));
       el.addEventListener('animationend', () => el.classList.remove('pop-in'), { once:true });
     }
-    nextId = Math.max(nextId, id+1);
-    topZ = Math.max(topZ, b.z+1);
+    nextId = Math.max(nextId, Number(id) + 1 || nextId);
+    topZ = Math.max(topZ, b.z + 1);
     return b;
   }
 
-  function addBlock(type,x,y,opt={}){
+  function defaultSpot(type){
     const s = blockSize(type);
-    const startX = opt.center ? x - s.w/2 : x;
-    const startY = opt.center ? y - s.h/2 : y;
-    const b = createBlock(type,startX,startY,opt);
-    if (opt.select !== false) { selected.clear(); selected.add(b.id); updateSelection(); }
-    const c = centerOf(b);
-    sparkle(c.x,c.y);
-    return b;
+    const u = parseFloat(getComputedStyle(stage).getPropertyValue('--u')) || 56;
+    const leftPad = window.matchMedia('(max-width:860px)').matches ? 90 : 122;
+    const topPad = 28;
+    const bottomPad = document.getElementById('bottomDock').getBoundingClientRect().height + 26;
+    const cols = Math.max(2, Math.floor((stage.clientWidth - leftPad - 24) / (u + 24)));
+    const usableRows = Math.max(1, Math.floor((stage.clientHeight - topPad - bottomPad) / (u + 24)));
+    const x = leftPad + (autoIndex % cols) * (u + 24);
+    const y = topPad + (Math.floor(autoIndex / cols) % usableRows) * (u + 24);
+    autoIndex++;
+    return { x:clamp(x, 4, stage.clientWidth - s.w - 4), y:clamp(y, 4, stage.clientHeight - bottomPad - s.h) };
   }
 
-  function updateSelection(){
-    blocks.forEach(b => b.el.classList.toggle('selected', selected.has(b.id)));
+  function centerOf(b){
+    const s = blockSize(b.type);
+    return { x:b.x + s.w/2, y:b.y + s.h/2 };
   }
 
-  function clearSelection(){ selected.clear(); updateSelection(); }
-
-  function selectedBlocks(){ return [...selected].map(id => blocks.get(id)).filter(Boolean); }
-
-  function centerOf(b){ const s = blockSize(b.type); return { x:b.x+s.w/2, y:b.y+s.h/2 }; }
-
-  function sortByPlace(a,b){ return (a.y-b.y) || (a.x-b.x); }
-
-  function averageCenter(group){
-    let x=0,y=0;
-    group.forEach(b => { const c=centerOf(b); x+=c.x; y+=c.y; });
-    return { x:x/group.length, y:y/group.length };
-  }
-
-  function nextPosition(type){
-    const inset = safeInsets();
-    const d = blockSize(type);
-    const gap = 13;
-    if (spawn.x < inset.left || spawn.y < inset.top) spawn = { x:inset.left+16, y:inset.top+16, rowH:0 };
-    if (spawn.x + d.w > stage.clientWidth - inset.right) {
-      spawn.x = inset.left + 16;
-      spawn.y += Math.max(66, spawn.rowH + gap);
-      spawn.rowH = 0;
-    }
-    if (spawn.y + d.h > stage.clientHeight - inset.bottom) {
-      spawn.x = inset.left + 16;
-      spawn.y = inset.top + 16;
-      spawn.rowH = 0;
-    }
-    const pos = clampPos(type, spawn.x, spawn.y);
-    spawn.x = pos.x + d.w + gap;
-    spawn.rowH = Math.max(spawn.rowH, d.h);
-    return pos;
+  function blockRect(b){
+    const s = blockSize(b.type);
+    return { left:b.x, top:b.y, right:b.x+s.w, bottom:b.y+s.h, width:s.w, height:s.h };
   }
 
   function pulse(btn){
-    btn.animate([{transform:'scale(1)'},{transform:'scale(.88)'},{transform:'scale(1)'}], {duration:220, easing:'ease-out'});
+    btn.animate([{transform:'scale(1)'},{transform:'scale(.88)'},{transform:'scale(1)'}],{duration:230,easing:'ease-out'});
   }
 
   function sparkle(x,y){
-    const ring = document.createElement('span');
+    const ring = document.createElement('div');
     ring.className = 'ring';
-    ring.style.left = `${x}px`; ring.style.top = `${y}px`;
+    ring.style.left = `${x}px`;
+    ring.style.top = `${y}px`;
     fxLayer.appendChild(ring);
     ring.addEventListener('animationend', () => ring.remove(), { once:true });
-    for (let i=0;i<8;i++){
-      const s = document.createElement('span');
-      s.className = 'spark';
-      const a = i*Math.PI/4 + Math.random()*.32;
-      const d = 24 + Math.random()*23;
-      s.style.left = `${x}px`; s.style.top = `${y}px`;
-      s.style.setProperty('--dx', `${Math.cos(a)*d}px`);
-      s.style.setProperty('--dy', `${Math.sin(a)*d}px`);
-      fxLayer.appendChild(s);
-      s.addEventListener('animationend', () => s.remove(), { once:true });
+    for (let i=0;i<8;i++) {
+      const dot = document.createElement('div');
+      const angle = (Math.PI * 2 * i) / 8;
+      const dist = 22 + Math.random() * 18;
+      dot.className = 'spark';
+      dot.style.left = `${x}px`;
+      dot.style.top = `${y}px`;
+      dot.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+      dot.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+      fxLayer.appendChild(dot);
+      dot.addEventListener('animationend', () => dot.remove(), { once:true });
     }
   }
 
-  function setMode(next){
-    mode = (mode === next) ? 'move' : next;
-    penBtn.classList.toggle('active', mode === 'pen');
-    highBtn.classList.toggle('active', mode === 'high');
-    eraserBtn.classList.toggle('active', mode === 'eraser');
-    canvas.classList.toggle('active', mode === 'pen' || mode === 'high' || mode === 'eraser');
-    stage.style.cursor = (mode === 'move') ? 'default' : 'crosshair';
-  }
-
-  function dropButtonAt(x,y){
-    const el = document.elementFromPoint(x,y);
-    return el && el.closest ? el.closest('[data-drop-action]') : null;
-  }
-
-  function clearDropHot(){ dropButtons.forEach(btn => btn.classList.remove('drop-hot')); }
-
-  function updateDropHot(x,y){
-    clearDropHot();
-    const btn = dropButtonAt(x,y);
-    if (btn) btn.classList.add('drop-hot');
-    return btn;
-  }
-
-  function createTrail(items){
-    items.forEach(({item,x,y}) => {
-      const el = document.createElement('div');
-      el.className = `afterimage ${item.type}`;
-      el.style.setProperty('--x', `${x}px`);
-      el.style.setProperty('--y', `${y}px`);
-      el.innerHTML = `<span>${labels[item.type]}</span>`;
-      fxLayer.appendChild(el);
-      el.addEventListener('animationend', () => el.remove(), { once:true });
+  function leaveBlockAfterimage(items){
+    items.slice(0,20).forEach(b => {
+      const ghost = document.createElement('div');
+      ghost.className = `afterimage ${b.type}`;
+      ghost.textContent = labels[b.type];
+      ghost.style.setProperty('--x', `${b.x}px`);
+      ghost.style.setProperty('--y', `${b.y}px`);
+      fxLayer.appendChild(ghost);
+      ghost.addEventListener('animationend', () => ghost.remove(), { once:true });
     });
   }
 
-  function mergeGroups(baseItems){
-    const groups = [];
+  function leaveSelectionAfterimage(rect){
+    if (rect.w < 12 || rect.h < 12) return;
+    const el = document.createElement('div');
+    el.className = 'selection-after';
+    el.style.left = `${rect.x}px`;
+    el.style.top = `${rect.y}px`;
+    el.style.width = `${rect.w}px`;
+    el.style.height = `${rect.h}px`;
+    fxLayer.appendChild(el);
+    el.addEventListener('animationend', () => el.remove(), { once:true });
+  }
+
+  function dropActionAt(clientX, clientY){
+    for (const btn of dropButtons) {
+      const r = btn.getBoundingClientRect();
+      if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) return btn.dataset.dropAction;
+    }
+    return '';
+  }
+
+  function updateDropHot(action){
+    dropButtons.forEach(btn => btn.classList.toggle('drop-hot', btn.dataset.dropAction === action));
+  }
+
+  function sortedByPlace(items){
+    return [...items].sort((a,b) => (a.y - b.y) || (a.x - b.x));
+  }
+
+  function findCluster(type, needed){
+    const all = [...blocks.values()].filter(b => b.type === type && !b.el.classList.contains('fade-out') && !b.el.classList.contains('fold-out'));
+    if (all.length < needed) return null;
+    let best = null;
+    let bestRadius = Infinity;
+    for (const anchor of all) {
+      const c = centerOf(anchor);
+      const ordered = all.map(b => ({ b, d:distance(c, centerOf(b)) })).sort((a,b) => a.d - b.d);
+      const group = ordered.slice(0, needed);
+      const radius = group[group.length-1].d;
+      if (radius < bestRadius) { bestRadius = radius; best = group.map(x => x.b); }
+    }
+    return best;
+  }
+
+  function pickMerge(useOnlySelected = false){
+    const chosen = selectedBlocks();
     for (const type of ['one','ten']) {
-      const arr = baseItems.filter(b => b.type === type).sort(sortByPlace);
-      for (let i=0;i+9<arr.length;i+=10) groups.push({ type, group:arr.slice(i,i+10), newType:higher[type] });
+      const sameType = sortedByPlace(chosen.filter(b => b.type === type));
+      if (sameType.length >= 10) return { group:sameType.slice(0,10), newType:higher[type] };
     }
-    return groups;
+    if (useOnlySelected) return null;
+    for (const type of ['one','ten']) {
+      const cluster = findCluster(type, 10);
+      if (cluster) return { group:cluster, newType:higher[type] };
+    }
+    return null;
   }
 
-  function mergeSelection(skipSave=false){
+  function mergeBlocks(opt = {}){
     if (busy) return false;
-    const base = selected.size ? selectedBlocks() : [...blocks.values()];
-    let groups = mergeGroups(base);
-    if (!groups.length && selected.size) groups = mergeGroups([...blocks.values()]);
-    if (!groups.length) { pulse(mergeBtn); return false; }
+    const picked = pickMerge(Boolean(opt.useOnlySelected));
+    if (!picked) { pulse(mergeBtn); return false; }
     busy = true;
-    setMode('move');
-    if (!skipSave) saveState();
-    const removeIds = new Set();
-    const creates = [];
-    groups.forEach(({group,newType}) => {
-      group.forEach(b => removeIds.add(b.id));
-      const c = averageCenter(group);
-      creates.push({ type:newType, x:c.x, y:c.y });
-    });
-    selected.clear();
-    removeIds.forEach(id => {
-      const b = blocks.get(id);
-      if (!b) return;
+    if (!opt.skipSave) saveState();
+    clearSelection();
+    const centers = picked.group.map(centerOf);
+    const cx = centers.reduce((a,p) => a+p.x,0) / centers.length;
+    const cy = centers.reduce((a,p) => a+p.y,0) / centers.length;
+    picked.group.forEach((b,i) => {
       b.el.classList.remove('selected','dragging');
-      b.el.style.zIndex = topZ++;
+      b.el.style.zIndex = topZ + i;
       b.el.classList.add('fold-out');
+      setTimeout(() => { b.el.remove(); blocks.delete(b.id); }, 260);
     });
     setTimeout(() => {
-      removeIds.forEach(id => { const b = blocks.get(id); if (b) { b.el.remove(); blocks.delete(id); } });
-      creates.forEach((p,i) => {
-        const b = addBlock(p.type,p.x,p.y,{ center:true, select:false });
-        selected.add(b.id);
-        setTimeout(() => sparkle(centerOf(b).x, centerOf(b).y), i*35);
-      });
-      updateSelection();
-      pulse(mergeBtn);
+      const nb = addBlock(picked.newType, cx, cy, { center:true });
+      clearSelection();
+      setSelected(nb.id, true);
+      sparkle(cx, cy);
       busy = false;
     }, 250);
+    pulse(mergeBtn);
     return true;
   }
 
-  function expandedPositions(childType,centerX,centerY,index=0){
-    const d = blockSize(childType);
-    const gap = Math.max(8, (parseFloat(getComputedStyle(stage).getPropertyValue('--u')) || 54)*.16);
-    const inset = safeInsets();
-    const usableW = stage.clientWidth - inset.left - inset.right;
-    const maxCols = Math.max(2, Math.floor((usableW + gap)/(d.w + gap)));
-    const cols = Math.min(5,maxCols);
-    const rows = Math.ceil(10/cols);
-    const totalW = cols*d.w + (cols-1)*gap;
-    const totalH = rows*d.h + (rows-1)*gap;
-    const offset = index * 10;
-    const startX = clamp(centerX-totalW/2+offset, inset.left, stage.clientWidth-inset.right-totalW);
-    const startY = clamp(centerY-totalH/2+offset, inset.top, stage.clientHeight-inset.bottom-totalH);
-    const list = [];
-    for (let i=0;i<10;i++) list.push(clampPos(childType, startX+(i%cols)*(d.w+gap), startY+Math.floor(i/cols)*(d.h+gap)));
-    return list;
+  function targetsForSplit(useOnlySelected = false){
+    const chosen = selectedBlocks().filter(b => b.type === 'hundred' || b.type === 'ten');
+    if (chosen.length) return chosen;
+    if (useOnlySelected) return [];
+    const active = blocks.get(lastActiveId);
+    if (active && (active.type === 'hundred' || active.type === 'ten')) return [active];
+    const firstHundred = [...blocks.values()].find(b => b.type === 'hundred');
+    if (firstHundred) return [firstHundred];
+    const firstTen = [...blocks.values()].find(b => b.type === 'ten');
+    return firstTen ? [firstTen] : [];
   }
 
-  function splitSelection(skipSave=false){
+  function splitBlocks(opt = {}){
     if (busy) return false;
-    let targets = selectedBlocks().filter(b => b.type === 'ten' || b.type === 'hundred');
-    if (!targets.length && lastActiveId) {
-      const b = blocks.get(lastActiveId);
-      if (b && (b.type === 'ten' || b.type === 'hundred')) targets = [b];
-    }
+    const targets = targetsForSplit(Boolean(opt.useOnlySelected));
     if (!targets.length) { pulse(splitBtn); return false; }
     busy = true;
-    setMode('move');
-    if (!skipSave) saveState();
-    const removeIds = new Set(targets.map(b => b.id));
-    const creates = [];
-    targets.forEach((b,idx) => {
-      const c = centerOf(b);
-      const childType = lower[b.type];
-      expandedPositions(childType,c.x,c.y,idx).forEach(p => creates.push({ type:childType, x:p.x, y:p.y }));
-      sparkle(c.x,c.y);
+    if (!opt.skipSave) saveState();
+    clearSelection();
+    const spawnItems = [];
+    targets.forEach((b, idx) => {
+      const toType = lower[b.type];
+      const fromSize = blockSize(b.type);
+      const toSize = blockSize(toType);
+      const gap = Math.max(7, (parseFloat(getComputedStyle(stage).getPropertyValue('--u')) || 56) * .15);
+      const cols = 5;
+      const rows = 2;
+      const gridW = cols * toSize.w + (cols-1)*gap;
+      const gridH = rows * toSize.h + (rows-1)*gap;
+      const baseX = b.x + fromSize.w/2 - gridW/2 + idx*12;
+      const baseY = b.y + fromSize.h/2 - gridH/2 + idx*12;
+      for (let i=0;i<10;i++) {
+        const p = { type:toType, x:baseX + (i%cols)*(toSize.w+gap), y:baseY + Math.floor(i/cols)*(toSize.h+gap) };
+        const tmp = { type:p.type, x:p.x, y:p.y };
+        clampBlock(tmp);
+        spawnItems.push(tmp);
+      }
       b.el.classList.remove('selected','dragging');
       b.el.classList.add('fade-out');
+      setTimeout(() => { b.el.remove(); blocks.delete(b.id); }, 220);
+      sparkle(b.x + fromSize.w/2, b.y + fromSize.h/2);
     });
-    selected.clear();
     setTimeout(() => {
-      removeIds.forEach(id => { const b = blocks.get(id); if (b) { b.el.remove(); blocks.delete(id); } });
-      creates.forEach((p,i) => setTimeout(() => {
-        const b = addBlock(p.type,p.x,p.y,{ select:false });
-        selected.add(b.id);
-        updateSelection();
-      }, i*14));
-      setTimeout(() => { pulse(splitBtn); busy = false; }, 190 + creates.length*14);
-    }, 180);
+      const made = [];
+      spawnItems.forEach((p,i) => setTimeout(() => {
+        const nb = addBlock(p.type, p.x, p.y);
+        made.push(nb.id);
+        if (i === spawnItems.length - 1) {
+          clearSelection();
+          made.forEach(id => setSelected(id, true));
+        }
+      }, i*16));
+      setTimeout(() => { busy = false; }, 250 + spawnItems.length*16);
+    }, 150);
+    pulse(splitBtn);
     return true;
   }
 
-  function deleteSelection(skipSave=false){
+  function deleteBlocks(opt = {}){
     if (busy) return false;
-    let targets = selectedBlocks();
-    if (!targets.length && lastActiveId) {
-      const b = blocks.get(lastActiveId);
-      if (b) targets = [b];
-    }
+    const targets = selectedBlocks();
     if (!targets.length) { pulse(deleteBtn); return false; }
-    busy = true;
-    setMode('move');
-    if (!skipSave) saveState();
+    if (!opt.skipSave) saveState();
     targets.forEach(b => {
+      const c = centerOf(b);
       b.el.classList.remove('selected','dragging');
       b.el.classList.add('fade-out');
-      const c = centerOf(b);
-      sparkle(c.x,c.y);
+      sparkle(c.x, c.y);
+      setTimeout(() => { b.el.remove(); blocks.delete(b.id); }, 230);
     });
-    const ids = new Set(targets.map(b => b.id));
     selected.clear();
-    setTimeout(() => {
-      ids.forEach(id => { const b=blocks.get(id); if (b) { b.el.remove(); blocks.delete(id); } });
-      pulse(deleteBtn);
-      busy = false;
-    }, 240);
+    pulse(deleteBtn);
     return true;
   }
 
-  function runDropAction(action,skipSave=true){
-    if (action === 'merge') mergeSelection(skipSave);
-    if (action === 'split') splitSelection(skipSave);
-    if (action === 'delete') deleteSelection(skipSave);
+  function cloneBlocks(opt = {}){
+    if (busy) return false;
+    const targets = selectedBlocks();
+    if (!targets.length) { pulse(cloneBtn); return false; }
+    if (!opt.skipSave) saveState();
+    const u = parseFloat(getComputedStyle(stage).getPropertyValue('--u')) || 56;
+    let dx = Math.max(28, u * .58);
+    let dy = Math.max(28, u * .58);
+    const rects = targets.map(blockRect);
+    const minX = Math.min(...rects.map(r => r.left));
+    const minY = Math.min(...rects.map(r => r.top));
+    const maxX = Math.max(...rects.map(r => r.right));
+    const maxY = Math.max(...rects.map(r => r.bottom));
+    if (maxX + dx > stage.clientWidth - 4) dx = -Math.max(28, u * .58);
+    if (maxY + dy > stage.clientHeight - 4) dy = -Math.max(28, u * .58);
+    if (minX + dx < 4) dx = Math.max(28, u * .58);
+    if (minY + dy < 4) dy = Math.max(28, u * .58);
+    leaveBlockAfterimage(targets);
+    const created = [];
+    sortedByPlace(targets).forEach((b, idx) => {
+      const nb = addBlock(b.type, b.x + dx, b.y + dy, { z:topZ + idx });
+      created.push(nb);
+    });
+    clearSelection();
+    created.forEach(b => setSelected(b.id, true));
+    const c = centerOf(created[created.length - 1]);
+    sparkle(c.x, c.y);
+    pulse(cloneBtn);
+    return true;
+  }
+
+  function runDropAction(action){
+    if (action === 'merge') return mergeBlocks({ skipSave:true, useOnlySelected:true });
+    if (action === 'split') return splitBlocks({ skipSave:true, useOnlySelected:true });
+    if (action === 'delete') return deleteBlocks({ skipSave:true });
+    if (action === 'clone') return cloneBlocks({ skipSave:true });
+    return false;
   }
 
   function onBlockPointerDown(ev){
@@ -630,266 +705,302 @@
     if (!b) return;
     lastActiveId = b.id;
     const pointerId = ev.pointerId;
-    const wasSelected = selected.has(b.id);
-    const sx = ev.clientX, sy = ev.clientY;
-    let moved = false, saved = false;
-    let dragItems = [], starts = [];
+    const startX = ev.clientX;
+    const startY = ev.clientY;
+    let moved = false;
+    let saved = false;
+    let dragGroup = [];
+    let starts = [];
+    let lastTrail = 0;
     b.el.setPointerCapture(pointerId);
 
-    function startDrag(){
+    const beginDrag = () => {
       if (moved) return;
       moved = true;
-      if (!wasSelected) { selected.clear(); selected.add(b.id); updateSelection(); }
-      dragItems = selectedBlocks();
-      starts = dragItems.map(item => ({ item, x:item.x, y:item.y }));
-      createTrail(starts);
+      if (!selected.has(b.id)) {
+        clearSelection();
+        setSelected(b.id, true);
+      }
       saveState();
       saved = true;
-      dragItems.forEach(item => {
+      dragGroup = selectedBlocks();
+      starts = dragGroup.map(item => ({ item, x:item.x, y:item.y }));
+      dragGroup.forEach(item => {
         item.z = topZ++;
         item.el.classList.add('dragging');
         positionBlock(item);
       });
-    }
+      leaveBlockAfterimage(dragGroup);
+    };
 
-    function move(e){
-      const dx = e.clientX - sx;
-      const dy = e.clientY - sy;
-      if (!moved && Math.hypot(dx,dy) > 5) startDrag();
+    const move = e => {
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (!moved && Math.hypot(dx,dy) > 5) beginDrag();
       if (!moved) return;
       starts.forEach(({item,x,y}) => {
-        const pos = clampPos(item.type, x+dx, y+dy);
-        item.x = pos.x; item.y = pos.y;
+        const s = blockSize(item.type);
+        item.x = clamp(x + dx, 3, stage.clientWidth - s.w - 3);
+        item.y = clamp(y + dy, 3, stage.clientHeight - s.h - 3);
         positionBlock(item);
       });
-      updateDropHot(e.clientX,e.clientY);
-    }
+      const now = performance.now();
+      if (now - lastTrail > 165) {
+        lastTrail = now;
+        leaveBlockAfterimage(dragGroup);
+      }
+      updateDropHot(dropActionAt(e.clientX, e.clientY));
+    };
 
-    function up(e){
+    const up = e => {
       b.el.removeEventListener('pointermove', move);
       b.el.removeEventListener('pointerup', up);
       b.el.removeEventListener('pointercancel', up);
-      try { b.el.releasePointerCapture(pointerId); } catch(_e) {}
-      const dropBtn = moved ? updateDropHot(e.clientX,e.clientY) : null;
-      clearDropHot();
-      if (moved) {
-        dragItems.forEach(item => item.el.classList.remove('dragging'));
-        if (dropBtn) runDropAction(dropBtn.dataset.dropAction, saved);
+      try { b.el.releasePointerCapture(pointerId); } catch(_err) {}
+      const action = dropActionAt(e.clientX, e.clientY);
+      updateDropHot('');
+      if (!moved) {
+        clearSelection();
+        setSelected(b.id, true);
         return;
       }
-      if (wasSelected) selected.delete(b.id);
-      else selected.add(b.id);
-      b.z = topZ++;
-      positionBlock(b);
-      updateSelection();
-    }
+      dragGroup.forEach(item => item.el.classList.remove('dragging'));
+      if (action && saved) runDropAction(action);
+    };
 
     b.el.addEventListener('pointermove', move);
     b.el.addEventListener('pointerup', up);
     b.el.addEventListener('pointercancel', up);
   }
 
-  let marquee = null;
-
-  function normalizedMarquee(){
-    const l = Math.min(marquee.x0,marquee.x1), t = Math.min(marquee.y0,marquee.y1);
-    const w = Math.abs(marquee.x1-marquee.x0), h = Math.abs(marquee.y1-marquee.y0);
-    return { left:l, top:t, right:l+w, bottom:t+h, width:w, height:h };
-  }
-
-  function updateMarquee(){
-    if (!marquee) return;
-    const m = normalizedMarquee();
-    selectionBox.style.display = 'block';
-    selectionBox.style.left = `${m.left}px`;
-    selectionBox.style.top = `${m.top}px`;
-    selectionBox.style.width = `${m.width}px`;
-    selectionBox.style.height = `${m.height}px`;
-  }
-
-  function selectByMarquee(){
-    const m = normalizedMarquee();
-    selected.clear();
-    blocks.forEach(b => {
-      const s = blockSize(b.type);
-      const r = { left:b.x, top:b.y, right:b.x+s.w, bottom:b.y+s.h };
-      if (r.left < m.right && r.right > m.left && r.top < m.bottom && r.bottom > m.top) selected.add(b.id);
-    });
-    updateSelection();
-  }
-
-  function leaveSelectionAfter(){
-    if (!marquee || !marquee.moved) return;
-    const m = normalizedMarquee();
-    if (m.width < 8 || m.height < 8) return;
-    const el = document.createElement('div');
-    el.className = 'selection-after';
-    el.style.left = `${m.left}px`;
-    el.style.top = `${m.top}px`;
-    el.style.width = `${m.width}px`;
-    el.style.height = `${m.height}px`;
-    fxLayer.appendChild(el);
-    el.addEventListener('animationend', () => el.remove(), { once:true });
-  }
-
+  let selectionDrag = null;
   stage.addEventListener('pointerdown', ev => {
     if (mode !== 'move' || busy) return;
-    if (ev.target.closest && ev.target.closest('.block,.toolbar,.palette')) return;
+    if (ev.target !== stage && ev.target !== blockLayer && ev.target !== fxLayer) return;
     ev.preventDefault();
     const p = localPoint(ev);
-    marquee = { pointerId:ev.pointerId, x0:p.x, y0:p.y, x1:p.x, y1:p.y, moved:false };
-    selected.clear(); updateSelection(); updateMarquee();
+    selectionDrag = { pointerId:ev.pointerId, x0:p.x, y0:p.y, x1:p.x, y1:p.y, moved:false };
     stage.setPointerCapture(ev.pointerId);
+    selectionBox.style.display = 'none';
   });
 
   stage.addEventListener('pointermove', ev => {
-    if (!marquee || ev.pointerId !== marquee.pointerId) return;
-    const p = localPoint(ev);
-    marquee.x1 = clamp(p.x,0,stage.clientWidth);
-    marquee.y1 = clamp(p.y,0,stage.clientHeight);
-    marquee.moved = marquee.moved || Math.hypot(marquee.x1-marquee.x0,marquee.y1-marquee.y0) > 5;
-    updateMarquee();
-    if (marquee.moved) selectByMarquee();
-  });
-
-  stage.addEventListener('pointerup', ev => {
-    if (!marquee || ev.pointerId !== marquee.pointerId) return;
-    try { stage.releasePointerCapture(ev.pointerId); } catch(_e) {}
-    leaveSelectionAfter();
-    if (!marquee.moved) clearSelection();
-    selectionBox.style.display = 'none';
-    marquee = null;
-  });
-
-  function onStampPointerDown(ev){
-    if (mode !== 'move') setMode(mode);
-    setMode('move');
+    if (!selectionDrag || ev.pointerId !== selectionDrag.pointerId) return;
     ev.preventDefault();
-    const type = ev.currentTarget.dataset.type;
-    const sx = ev.clientX, sy = ev.clientY;
-    let moved = false, ghost = null;
-
-    function makeGhost(x,y){
-      ghost = document.createElement('div');
-      ghost.className = `ghost ${type}`;
-      ghost.innerHTML = `<span>${labels[type]}</span>`;
-      document.body.appendChild(ghost);
-      moveGhost(x,y);
+    const p = localPoint(ev);
+    selectionDrag.x1 = clamp(p.x, 0, stage.clientWidth);
+    selectionDrag.y1 = clamp(p.y, 0, stage.clientHeight);
+    const x = Math.min(selectionDrag.x0, selectionDrag.x1);
+    const y = Math.min(selectionDrag.y0, selectionDrag.y1);
+    const w = Math.abs(selectionDrag.x1 - selectionDrag.x0);
+    const h = Math.abs(selectionDrag.y1 - selectionDrag.y0);
+    if (!selectionDrag.moved && Math.hypot(w,h) > 7) selectionDrag.moved = true;
+    if (selectionDrag.moved) {
+      selectionBox.style.display = 'block';
+      selectionBox.style.left = `${x}px`;
+      selectionBox.style.top = `${y}px`;
+      selectionBox.style.width = `${w}px`;
+      selectionBox.style.height = `${h}px`;
     }
+  });
 
-    function moveGhost(x,y){ if (ghost) { ghost.style.left = `${x}px`; ghost.style.top = `${y}px`; } }
-
-    function move(e){
-      const d = Math.hypot(e.clientX-sx,e.clientY-sy);
-      if (!moved && d > 5) { moved = true; makeGhost(e.clientX,e.clientY); }
-      if (moved) moveGhost(e.clientX,e.clientY);
-    }
-
-    function up(e){
-      document.removeEventListener('pointermove', move);
-      document.removeEventListener('pointerup', up);
-      if (ghost) ghost.remove();
-      saveState();
+  function finishSelection(ev){
+    if (!selectionDrag || ev.pointerId !== selectionDrag.pointerId) return;
+    try { stage.releasePointerCapture(ev.pointerId); } catch(_e) {}
+    if (selectionDrag.moved) {
+      const x = Math.min(selectionDrag.x0, selectionDrag.x1);
+      const y = Math.min(selectionDrag.y0, selectionDrag.y1);
+      const w = Math.abs(selectionDrag.x1 - selectionDrag.x0);
+      const h = Math.abs(selectionDrag.y1 - selectionDrag.y0);
+      const rect = { left:x, top:y, right:x+w, bottom:y+h, x, y, w, h };
       clearSelection();
-      if (!moved) {
-        const p = nextPosition(type);
-        addBlock(type,p.x,p.y,{ select:true });
-      } else {
-        const p = localPoint(e);
-        const target = document.elementFromPoint(e.clientX,e.clientY);
-        const onControl = target && target.closest && target.closest('.toolbar,.palette');
-        if (p.inside && !onControl) addBlock(type,p.x,p.y,{ center:true, select:true });
-        else history.pop();
-      }
-      updateUndo();
+      blocks.forEach(b => { if (intersects(blockRect(b), rect)) setSelected(b.id, true); });
+      leaveSelectionAfterimage(rect);
+    } else {
+      clearSelection();
     }
+    selectionBox.style.display = 'none';
+    selectionDrag = null;
+  }
+  stage.addEventListener('pointerup', finishSelection);
+  stage.addEventListener('pointercancel', finishSelection);
 
-    document.addEventListener('pointermove', move);
-    document.addEventListener('pointerup', up, { once:true });
+  function setTool(next){
+    mode = (mode === next) ? 'move' : next;
+    penBtn.classList.toggle('active', mode === 'pen');
+    highBtn.classList.toggle('active', mode === 'high');
+    eraserBtn.classList.toggle('active', mode === 'eraser');
+    canvas.classList.toggle('active', mode === 'pen' || mode === 'high' || mode === 'eraser');
+    stage.style.cursor = (mode === 'pen' || mode === 'high' || mode === 'eraser') ? 'crosshair' : 'default';
   }
 
-  stamps.forEach(btn => btn.addEventListener('pointerdown', onStampPointerDown));
+  function setPenColor(color){
+    penColor = color;
+    penSwatches.forEach(s => s.classList.toggle('active', s.dataset.color === color));
+    setTool('pen');
+    if (mode !== 'pen') setTool('pen');
+  }
+
+  function setHighColor(color){
+    highColor = color;
+    highSwatches.forEach(s => s.classList.toggle('active', s.dataset.color === color));
+    setTool('high');
+    if (mode !== 'high') setTool('high');
+  }
+
+  function hexToRgba(hex, alpha){
+    const clean = hex.replace('#','');
+    const num = parseInt(clean, 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
 
   let drawing = false;
   let lastPoint = null;
-  let savedDraw = false;
 
-  function drawLine(ev){
+  function drawTo(ev){
     const p = localPoint(ev);
     if (!lastPoint) lastPoint = p;
-    ctx.save();
     ctx.beginPath();
-    ctx.moveTo(lastPoint.x,lastPoint.y);
-    ctx.lineTo(p.x,p.y);
-    if (mode === 'pen') {
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = 'rgba(29,38,53,.92)';
-      ctx.lineWidth = 4.2;
-    } else if (mode === 'high') {
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.strokeStyle = 'rgba(255,232,68,.42)';
-      ctx.lineWidth = 22;
-    } else if (mode === 'eraser') {
+    ctx.moveTo(lastPoint.x, lastPoint.y);
+    ctx.lineTo(p.x, p.y);
+    if (mode === 'eraser') {
       ctx.globalCompositeOperation = 'destination-out';
       ctx.strokeStyle = 'rgba(0,0,0,1)';
       ctx.lineWidth = 34;
+    } else if (mode === 'pen') {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = hexToRgba(penColor, .94);
+      ctx.lineWidth = 4.8;
+    } else {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.strokeStyle = hexToRgba(highColor, .42);
+      ctx.lineWidth = 25;
     }
     ctx.stroke();
-    ctx.restore();
+    ctx.globalCompositeOperation = 'source-over';
     lastPoint = p;
   }
 
   canvas.addEventListener('pointerdown', ev => {
     if (!(mode === 'pen' || mode === 'high' || mode === 'eraser')) return;
     ev.preventDefault();
+    saveState();
     drawing = true;
     lastPoint = localPoint(ev);
-    savedDraw = true;
-    saveState();
     canvas.setPointerCapture(ev.pointerId);
-    drawLine(ev);
+    drawTo(ev);
   });
-
   canvas.addEventListener('pointermove', ev => {
     if (!drawing) return;
     ev.preventDefault();
-    drawLine(ev);
+    drawTo(ev);
   });
-
-  function stopDrawing(ev){
+  function endDraw(ev){
     if (!drawing) return;
     drawing = false;
     lastPoint = null;
-    savedDraw = false;
     try { canvas.releasePointerCapture(ev.pointerId); } catch(_e) {}
   }
-  canvas.addEventListener('pointerup', stopDrawing);
-  canvas.addEventListener('pointercancel', stopDrawing);
+  canvas.addEventListener('pointerup', endDraw);
+  canvas.addEventListener('pointercancel', endDraw);
+
+  function preparePaletteDrag(stamp, ev){
+    ev.preventDefault();
+    const type = stamp.dataset.type;
+    const startX = ev.clientX, startY = ev.clientY;
+    let ghost = null;
+    let dragged = false;
+    stamp.setPointerCapture(ev.pointerId);
+
+    const moveGhost = e => {
+      if (!ghost) return;
+      ghost.style.left = `${e.clientX}px`;
+      ghost.style.top = `${e.clientY}px`;
+    };
+    const makeGhost = e => {
+      ghost = document.createElement('div');
+      ghost.className = `ghost ${type}`;
+      ghost.textContent = labels[type];
+      document.body.appendChild(ghost);
+      moveGhost(e);
+    };
+    const move = e => {
+      if (!dragged && Math.hypot(e.clientX-startX, e.clientY-startY) > 5) {
+        dragged = true;
+        makeGhost(e);
+      }
+      if (dragged) moveGhost(e);
+    };
+    const up = e => {
+      stamp.removeEventListener('pointermove', move);
+      stamp.removeEventListener('pointerup', up);
+      stamp.removeEventListener('pointercancel', up);
+      try { stamp.releasePointerCapture(e.pointerId); } catch(_err) {}
+      if (ghost) ghost.remove();
+      const p = localPoint(e);
+      if (dragged && p.inside) {
+        saveState();
+        const s = blockSize(type);
+        const nb = addBlock(type, p.x - s.w/2, p.y - s.h/2);
+        clearSelection();
+        setSelected(nb.id, true);
+      } else if (!dragged) {
+        saveState();
+        const spot = defaultSpot(type);
+        const nb = addBlock(type, spot.x, spot.y);
+        clearSelection();
+        setSelected(nb.id, true);
+      }
+      if (mode !== 'move') setTool(mode);
+    };
+    stamp.addEventListener('pointermove', move);
+    stamp.addEventListener('pointerup', up);
+    stamp.addEventListener('pointercancel', up);
+  }
+
+  stamps.forEach(stamp => stamp.addEventListener('pointerdown', ev => preparePaletteDrag(stamp, ev)));
+
+  function clampAllBlocks(){ blocks.forEach(b => { clampBlock(b); positionBlock(b); }); }
+  function debounce(fn, wait){ let t; return () => { clearTimeout(t); t = setTimeout(fn, wait); }; }
 
   undoBtn.addEventListener('click', undo);
-  mergeBtn.addEventListener('click', () => mergeSelection(false));
-  splitBtn.addEventListener('click', () => splitSelection(false));
-  deleteBtn.addEventListener('click', () => deleteSelection(false));
-  penBtn.addEventListener('click', () => setMode('pen'));
-  highBtn.addEventListener('click', () => setMode('high'));
-  eraserBtn.addEventListener('click', () => setMode('eraser'));
-  fullBtn.addEventListener('click', () => {
-    if (!document.fullscreenElement) {
-      const target = document.documentElement;
-      if (target.requestFullscreen) target.requestFullscreen().catch(()=>{});
-    } else if (document.exitFullscreen) document.exitFullscreen().catch(()=>{});
-    pulse(fullBtn);
+  cloneBtn.addEventListener('click', () => cloneBlocks());
+  mergeBtn.addEventListener('click', () => mergeBlocks());
+  splitBtn.addEventListener('click', () => splitBlocks());
+  deleteBtn.addEventListener('click', () => deleteBlocks());
+  penBtn.addEventListener('click', () => setTool('pen'));
+  highBtn.addEventListener('click', () => setTool('high'));
+  eraserBtn.addEventListener('click', () => setTool('eraser'));
+  penSwatches.forEach(btn => btn.addEventListener('click', () => setPenColor(btn.dataset.color)));
+  highSwatches.forEach(btn => btn.addEventListener('click', () => setHighColor(btn.dataset.color)));
+  fullBtn.addEventListener('click', async () => {
+    try {
+      if (!document.fullscreenElement) await app.requestFullscreen();
+      else await document.exitFullscreen();
+      pulse(fullBtn);
+      setTimeout(() => { fitUnit(); resizeCanvas(true); clampAllBlocks(); }, 120);
+    } catch(_e) { pulse(fullBtn); }
   });
 
-  window.addEventListener('resize', () => {
+  window.addEventListener('resize', debounce(() => {
     fitUnit();
-    blocks.forEach(b => { const p = clampPos(b.type,b.x,b.y); b.x=p.x; b.y=p.y; positionBlock(b); });
-    updateCanvasSize(true);
+    resizeCanvas(true);
+    clampAllBlocks();
+  }, 120));
+
+  document.addEventListener('keydown', ev => {
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); undo(); }
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'c') { ev.preventDefault(); cloneBlocks(); }
+    if (ev.key === 'Escape') setTool('move');
+    if (ev.key === 'Delete' || ev.key === 'Backspace') deleteBlocks();
   });
 
   fitUnit();
-  updateCanvasSize(false);
-  updateUndo();
+  resizeCanvas(false);
+  updateUndoButton();
 })();
 </script>
 </body>
